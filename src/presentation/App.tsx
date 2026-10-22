@@ -5,6 +5,7 @@ import { analizarCartola } from '../application/analizarCartola';
 import { leerArchivos, errorDeAnalisis, type Entradas, type TipoEntrada } from '../infrastructure/input';
 import AnalysisView from './AnalysisView';
 import DataPanel from './DataPanel';
+import { validarNegocio } from '../domain/validation';
 import Navigation, { type Vista } from './Navigation';
 const titulosVista = { analisis: 'Análisis de cartola', datos: 'Archivos de entrada', reglas: 'Cómo se calcula' };
 const descripcionesVista = { analisis: 'Entiende lo que pagas. Descubre qué puedes mejorar.', datos: 'Carga los archivos para analizar costos y comparar series.', reglas: 'Cada cifra tiene una regla detrás.' };
@@ -14,6 +15,8 @@ export default function App() {
   const [vista, setVista] = useState<Vista>('datos');
   const [resultado, setResultado] = useState<Analisis | null>(null);
   const [entradas, setEntradas] = useState<Partial<Entradas>>({});
+  const [revisionDatos, setRevisionDatos] = useState<Partial<Entradas>>({});
+  const [validado, setValidado] = useState(false);
   const [nombres, setNombres] = useState(nombresVacios);
   const [archivos, setArchivos] = useState<Partial<Record<TipoEntrada, File>>>({});
   const [error, setError] = useState('');
@@ -32,6 +35,31 @@ export default function App() {
     media.addEventListener('change', cerrarEnEscritorio);
     return () => media.removeEventListener('change', cerrarEnEscritorio);
   }, []);
+  useEffect(() => {
+    const id = ++operacion.current;
+    let cancelado = false;
+    async function revisar() {
+      setCargando(true); setValidado(false);
+      try {
+        const { cambios, errores } = await leerArchivos(archivos);
+        if (cancelado || operacion.current !== id) return;
+        const datos = { ...entradas };
+        for (const tipo of Object.keys(archivos) as TipoEntrada[]) delete datos[tipo];
+        for (const cambio of cambios) Object.assign(datos, { [cambio.tipo]: cambio.datos });
+        setRevisionDatos(datos); setErroresArchivo(errores);
+        if (Object.keys(errores).length || !datos.cartola || !datos.catalogo || !datos.acuerdos) return;
+        validarNegocio(datos.cartola, datos.catalogo, datos.acuerdos);
+        setValidado(true);
+      } catch (err) {
+        if (cancelado || operacion.current !== id) return;
+        const archivo = errorDeAnalisis(err);
+        if (archivo) setErroresArchivo({ [archivo.tipo]: archivo.message });
+        else setError('No se pudieron revisar los archivos. Vuelve a seleccionarlos.');
+      } finally { if (!cancelado && operacion.current === id) setCargando(false); }
+    }
+    void revisar();
+    return () => { cancelado = true; };
+  }, [archivos, entradas]);
   function cerrarMenu() {
     setMenuAbierto(false);
     requestAnimationFrame(() => disparadorMenu.current?.focus());
@@ -40,38 +68,32 @@ export default function App() {
   function seleccionar(tipo: TipoEntrada, archivo: File) {
     operacion.current++;
     setArchivos(prev => ({ ...prev, [tipo]: archivo }));
-    setResultado(null); setCargando(false); setError(''); setErroresArchivo(prev => { const siguiente = { ...prev }; delete siguiente[tipo]; return siguiente; }); setDetalleError('');
+    setValidado(false); setCargando(true);
+    setRevisionDatos(prev => { const datos = { ...prev }; delete datos[tipo]; return datos; });
+    setResultado(null); setError(''); setErroresArchivo(prev => { const siguiente = { ...prev }; delete siguiente[tipo]; return siguiente; }); setDetalleError('');
   }
   function limpiar() {
     operacion.current++;
+    setRevisionDatos({}); setValidado(false);
     setEntradas({}); setResultado(null); setNombres(nombresVacios); setArchivos({});
     setRevision(r => r + 1); setError(''); setErroresArchivo({}); setDetalleError(''); setCargando(false);
   }
-  async function analizar() {
-    const id = ++operacion.current;
-    setCargando(true); setResultado(null); setError(''); setErroresArchivo({}); setDetalleError('');
+  function analizar() {
+    if (!validado || !revisionDatos.cartola || !revisionDatos.catalogo || !revisionDatos.acuerdos) return;
+    setError(''); setDetalleError('');
     try {
-      const nuevos: Partial<Entradas> = { ...entradas };
+      const analisis = analizarCartola(revisionDatos.cartola, revisionDatos.catalogo, revisionDatos.acuerdos);
       const etiquetas = { ...nombres };
-      const { cambios, errores } = await leerArchivos(archivos);
-      if (operacion.current !== id) return;
-      if (Object.keys(errores).length) { setErroresArchivo(errores); return; }
-      for (const cambio of cambios) {
-        Object.assign(nuevos, { [cambio.tipo]: cambio.datos }); etiquetas[cambio.tipo] = cambio.nombre;
-      }
-      if (!nuevos.cartola || !nuevos.catalogo || !nuevos.acuerdos) throw new Error('Carga cartola, catálogo y acuerdos antes de analizar.');
-      const analisis = analizarCartola(nuevos.cartola, nuevos.catalogo, nuevos.acuerdos);
-      if (operacion.current !== id) return;
-      setEntradas(nuevos); setNombres(etiquetas); setResultado(analisis); setArchivos({}); setRevision(r => r + 1);
+      for (const tipo of Object.keys(archivos) as TipoEntrada[]) etiquetas[tipo] = archivos[tipo]!.name;
+      setEntradas(revisionDatos); setNombres(etiquetas); setResultado(analisis); setArchivos({}); setRevision(r => r + 1);
       setVista('analisis');
       requestAnimationFrame(() => titulo.current?.focus());
     } catch (err) {
-      if (operacion.current !== id) return;
       const archivo = errorDeAnalisis(err);
-      if (archivo) { setErroresArchivo({ [archivo.tipo]: archivo.message }); return; }
+      if (archivo) { setValidado(false); setErroresArchivo({ [archivo.tipo]: archivo.message }); return; }
       setError('No se pudo completar el análisis. Revisa la información para soporte y solicita archivos corregidos.');
       setDetalleError(err instanceof Error ? err.message : 'Error no identificado.');
-    } finally { if (operacion.current === id) setCargando(false); }
+    }
   }
   const tiposConError = (Object.keys(erroresArchivo) as TipoEntrada[]);
   const etiquetasArchivo = { cartola: 'Cartola del cliente', catalogo: 'Catálogo de productos', acuerdos: 'Acuerdos de distribución' };
@@ -88,7 +110,7 @@ export default function App() {
           {vista === 'analisis' && resultado && <button className="ts-button ts-button--primary" onClick={() => navegar('datos')}><Upload size={15} aria-hidden="true" />Actualizar archivos</button>}
         </div>
         {datosVisibles && (error || tiposConError.length > 0) && <div className="ts-error" role="alert"><strong>Revisa los archivos indicados</strong>{error && <p>{error}</p>}{tiposConError.length > 0 && <ul>{tiposConError.map(tipo => <li key={tipo}><a href={`#archivo-${tipo}`}>{etiquetasArchivo[tipo]}: revisar los datos señalados.</a></li>)}</ul>}{detalleError && <details><summary>Información para soporte</summary><p>{detalleError}</p></details>}</div>}
-        {datosVisibles && <DataPanel actualizando={actualizarDatos} erroresArchivo={erroresArchivo} nombres={nombres} archivos={archivos} alSeleccionar={seleccionar} alAnalizar={analizar} alLimpiar={limpiar} cargando={cargando} revision={revision} listo={(['cartola', 'catalogo', 'acuerdos'] as const).every(tipo => entradas[tipo] || archivos[tipo])} />}
+        {datosVisibles && <DataPanel datos={revisionDatos} validado={validado} actualizando={actualizarDatos} erroresArchivo={erroresArchivo} nombres={nombres} archivos={archivos} alSeleccionar={seleccionar} alAnalizar={analizar} alLimpiar={limpiar} cargando={cargando} revision={revision} listo={validado} />}
         {vista === 'reglas' && <Reglas />}
         {resultado && <div hidden={vista !== 'analisis'}><AnalysisView resultado={resultado} /></div>}
 

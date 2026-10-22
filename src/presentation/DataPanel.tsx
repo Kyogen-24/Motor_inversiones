@@ -1,5 +1,6 @@
 import { Check, CircleAlert, FileJson, Upload, RotateCcw } from 'lucide-react';
-import type { TipoEntrada } from '../infrastructure/input';
+import InputReview from './InputReview';
+import type { Entradas, TipoEntrada } from '../infrastructure/input';
 
 const fuentes = [
   { tipo: 'cartola', titulo: 'Cartola del cliente', descripcion: 'Posiciones, montos, corte y condición APV.' },
@@ -7,6 +8,8 @@ const fuentes = [
   { tipo: 'acuerdos', titulo: 'Acuerdos de distribución', descripcion: 'Vigencia, habilitación, mandato y patrimonio.' },
 ] as const;
 interface Props {
+  readonly datos: Partial<Entradas>;
+  readonly validado: boolean;
   readonly actualizando: boolean;
   readonly erroresArchivo: Partial<Record<TipoEntrada, string>>;
   readonly nombres: Record<TipoEntrada, string>;
@@ -18,7 +21,7 @@ interface Props {
   readonly revision: number;
   readonly listo: boolean;
 }
-export default function DataPanel({ actualizando, erroresArchivo, nombres, archivos, alSeleccionar, alAnalizar, alLimpiar, cargando, revision, listo }: Props) {
+export default function DataPanel({ datos, validado, actualizando, erroresArchivo, nombres, archivos, alSeleccionar, alAnalizar, alLimpiar, cargando, revision, listo }: Props) {
   const disponibles = fuentes.filter(f => archivos[f.tipo] || nombres[f.tipo]);
   const faltantes = fuentes.filter(f => !archivos[f.tipo] && !nombres[f.tipo]);
   return <section className="ts-input-panel" aria-labelledby="datos-title">
@@ -32,6 +35,9 @@ export default function DataPanel({ actualizando, erroresArchivo, nombres, archi
       let estado = 'Pendiente';
       if (seleccionado) { clase += ' ts-source--selected'; estado = 'Validado'; }
       if (archivos[f.tipo]) estado = 'Pendiente de validar';
+      if (datos[f.tipo]) estado = 'Formato válido';
+      if (validado) estado = 'Archivo válido';
+      if (cargando && seleccionado) estado = 'Revisando…';
       if (invalido) { clase = 'ts-source ts-source--error'; estado = 'Revisar archivo'; }
       return <div className={clase} key={f.tipo}>
         <div className="ts-source-heading"><FileJson size={22} strokeWidth={1.5} aria-hidden="true" />
@@ -50,7 +56,8 @@ export default function DataPanel({ actualizando, erroresArchivo, nombres, archi
         {invalido && <p className="ts-file-error" id={`error-${f.tipo}`}>{erroresArchivo[f.tipo]}</p>}
       </div>;
     })}</div>
-    <div className="ts-input-actions"><button className="ts-button ts-button--primary" onClick={alAnalizar} disabled={cargando || !listo || !Object.keys(archivos).length}><Upload size={16} aria-hidden="true" />{cargando ? 'Analizando…' : 'Analizar archivos'}</button>
+    <InputReview datos={datos} nombres={{ cartola: archivos.cartola?.name || nombres.cartola, catalogo: archivos.catalogo?.name || nombres.catalogo, acuerdos: archivos.acuerdos?.name || nombres.acuerdos }} errores={erroresArchivo} />
+    <div className="ts-input-actions"><button className="ts-button ts-button--primary" onClick={alAnalizar} disabled={cargando || !listo}><Upload size={16} aria-hidden="true" />{cargando ? 'Revisando archivos…' : 'Analizar cartola'}</button>
       <button className="ts-button" onClick={alLimpiar} disabled={cargando}><RotateCcw size={15} aria-hidden="true" />Limpiar datos</button>
       <p>Hasta 5 MB por archivo.</p>
     </div>

@@ -24,7 +24,7 @@ npm run preview
 
 ## Uso
 
-1. La aplicación empieza vacía, en Archivos de entrada. Selecciona `data/cartola.json`, `data/catalogo.json` y `data/acuerdos.json`; pulsa Analizar archivos. La selección queda pendiente de validar hasta analizar.
+1. La aplicación empieza vacía, en Archivos de entrada. Selecciona `data/cartola.json`, `data/catalogo.json` y `data/acuerdos.json`. Se leen y validan al seleccionar. Revisa su contenido en las pestañas Cartola, Catálogo y Acuerdos; después pulsa Analizar cartola. El botón se habilita cuando los tres archivos y sus referencias son válidos.
 2. En Vista general, revisa patrimonio, costos antes y después, ahorro elegible y oportunidades condicionadas.
 3. En Posiciones, busca un fondo. La flecha de cada fila abre Acceso y series, con alternativas, reglas y evidencia.
 4. Usa Actualizar archivos para reemplazar uno o varios JSON. Los demás se conservan; seleccionar un reemplazo retira los resultados anteriores. Los errores aparecen junto al archivo afectado y se enlazan desde el resumen.

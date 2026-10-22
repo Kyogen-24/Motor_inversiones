@@ -275,3 +275,28 @@ td small { display: block; font-size: 9px; color: var(--color-muted); margin-top
 .ts-error li { margin-top: 8px; }
 .ts-holdings > .ts-section-heading { flex-wrap: wrap; }
 .ts-analysis-footer summary { padding-block: 8px; }
+
+.ts-input-review { margin-top: 32px; padding-top: 28px; border-top: 1px solid var(--color-line); }
+.ts-input-review .ts-tabs { margin-bottom: 18px; }
+.ts-input-review .ts-tabs button { font-size: 13px; }
+.ts-review-file { color: var(--color-muted); font-size: 12px; overflow-wrap: anywhere; margin-bottom: 18px; }
+.ts-review-warning { color: #a32920; margin-bottom: 18px; font-size: 12px; }
+.ts-review-meta { display: flex; flex-wrap: wrap; gap: 20px 32px; margin: 0 0 24px; }
+.ts-review-meta > div { min-width: 120px; overflow-wrap: anywhere; }
+.ts-review-meta dt { font-size: 11px; color: var(--color-muted); margin-bottom: 5px; }
+.ts-review-meta dd { margin: 0; font-size: 13px; font-variant-numeric: tabular-nums; }
+.ts-review-tools, .ts-review-pagination { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin: 12px 0; color: var(--color-muted); font-size: 11px; flex-wrap: wrap; }
+.ts-review-table table { font-size: 12px; }
+.ts-review-table thead th { font-size: 11px; }
+.ts-review-table td { min-width: 105px; font-variant-numeric: tabular-nums; }
+.ts-review-table td:first-child { min-width: 200px; }
+.ts-review-item { border: 1px solid var(--color-line); border-radius: var(--radius-control); margin-top: 12px; padding: 0 18px; }
+.ts-review-item summary { padding: 16px 0; display: list-item; overflow-wrap: anywhere; }
+.ts-review-item summary > span:first-child { display: inline-block; vertical-align: middle; width: calc(100% - 110px); }
+.ts-review-item summary > span:last-child { font-size: 11px; color: var(--color-muted); margin-left: 12px; }
+.ts-review-item summary strong { font-size: 13px; font-weight: 600; }
+.ts-review-item summary small { display: block; color: var(--color-muted); font-size: 11px; margin-top: 4px; }
+.ts-review-item > .ts-review-table { margin-bottom: 18px; }
+.ts-review-item > .ts-review-meta { border-top: 1px solid var(--color-line); padding-top: 18px; }
+.ts-review-count, .ts-review-search { margin-top: 20px; color: var(--color-muted); font-size: 12px; }
+@media (max-width: 580px) { .ts-review-meta { gap: 18px; } .ts-review-meta > div { min-width: calc(50% - 18px); max-width: 100%; } .ts-review-item { padding-inline: 12px; } .ts-review-tools .ts-search { align-items: stretch; } .ts-review-pagination .ts-button { min-height: 44px; } }
