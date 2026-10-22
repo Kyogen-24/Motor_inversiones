@@ -1,0 +1,18 @@
+node_modules/
+dist/
+artifacts/
+*.local
+*.log
+*.tsbuildinfo
+.aws
+.aws/
+.env*
+!.env.example
+.impeccable/review/
+.playwright-mcp/
+
+# Solo versionar las entradas de ejemplo conocidas.
+data/*
+!data/cartola.json
+!data/catalogo.json
+!data/acuerdos.json

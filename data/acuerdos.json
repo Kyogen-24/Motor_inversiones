@@ -1,0 +1,87 @@
+{
+  "_aviso": "Dato de ejemplo. Acuerdos de distribución ficticios.",
+  "_nota": "Una serie está habilitada si aparece bajo el producto, con su comisión de distribución en porcentaje anual. La AGF Gamma no tiene acuerdo: sus productos se leen, no se proponen.",
+  "distribuidor": "Distribuidor de ejemplo",
+  "acuerdos": [
+    {
+      "emisor": "alfa",
+      "estado": "active",
+      "vigente_desde": "2025-03-01",
+      "vigente_hasta": null,
+      "mandato": false,
+      "patrimonio_agregado_clp": 180000000,
+      "patrimonio_al": "2026-09-30",
+      "series": {
+        "alfa-deuda-uf": {
+          "CLASI": 0.8,
+          "B": 0.55,
+          "F": 0.2,
+          "M": 0.3,
+          "APV": 0.3
+        },
+        "alfa-rv-global": {
+          "CLASI": 1.0,
+          "A": 0.6,
+          "B": 0.7,
+          "F": 0.3,
+          "APV": 0.4
+        }
+      }
+    },
+    {
+      "emisor": "beta",
+      "estado": "active",
+      "vigente_desde": "2025-06-01",
+      "vigente_hasta": null,
+      "mandato": true,
+      "patrimonio_agregado_clp": 40000000,
+      "patrimonio_al": "2026-09-30",
+      "series": {
+        "beta-corto-clp": {
+          "CLASI": 0.4,
+          "B": 0.25
+        },
+        "beta-deuda-uf-corto": {
+          "CLASI": 0.5,
+          "B": 0.3
+        },
+        "beta-balanceado": {
+          "CLASI": 0.9,
+          "B": 0.6,
+          "M": 0.35,
+          "APV": 0.4
+        }
+      }
+    },
+    {
+      "emisor": "delta",
+      "estado": "active",
+      "vigente_desde": "2026-01-15",
+      "vigente_hasta": null,
+      "mandato": false,
+      "patrimonio_agregado_clp": 15000000,
+      "patrimonio_al": "2026-09-30",
+      "series": {
+        "delta-deuda-corp": {
+          "CLASI": 0.7,
+          "B": 0.3
+        },
+        "delta-rv-global-idx": {
+          "CLASI": 0.5,
+          "B": 0.2
+        }
+      }
+    }
+  ],
+  "productos_sin_serie": {
+    "deposito-uf-90d": {
+      "comision_distribucion_pct": 0.0
+    },
+    "efectivo-clp": {
+      "comision_distribucion_pct": 0.0
+    },
+    "seguro-epsilon-ahorro": {
+      "comision_distribucion_pct": 3.0
+    }
+  }
+}
