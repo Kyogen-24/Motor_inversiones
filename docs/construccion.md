@@ -29,9 +29,9 @@ Se compiló con `VITE_BASE_PATH=/varenne/` y se abrió la compilación mediante 
 
 Tailwind limita el escaneo a presentación para producir el mismo CSS al compilar la entrega aislada, sin depender de archivos internos del espacio de trabajo. El flujo de Pages ejecuta `npm test` antes de compilar. README.md y AGENTS.md incluyen los comandos.
 
-## Pendiente de publicación
+## Estado de publicación
 
-No existe repositorio Git accesible ni publicación de esta solución. SC-009 permanece pendiente. La construcción local y su verificación están terminadas; la entrega pública necesita confirmar el destino y publicar únicamente la aplicación con su documentación propia.
+Repositorio privado [Kyogen-24/Varenne](https://github.com/Kyogen-24/Varenne), rama `main`; sitio [Varenne](https://kyogen-24.github.io/Varenne/). El despliegue inicial `76f7661` terminó correctamente en GitHub Actions. Solo se publica `dist/`, mediante ejecución manual. SC-009 es parcial porque el usuario eligió un repositorio privado.
 
 ## Herramientas con límites
 
@@ -64,7 +64,7 @@ Tipos y compilación correctos. Revisión estática externa de los componentes a
 Se extrajeron la tasa computable, clasificación de costos, comprobación de valorización y comparación estable de alternativas en funciones privadas del mismo archivo. Se preservaron la firma pública, fórmulas y desempate lexicográfico. Las reglas SonarJS S3776 con umbral 15 y S3358 no reportan avisos en `diagnosis.ts`. Tipos y compilación correctos; la carga manual conserva siete posiciones, costo actual 5.180.000, costo posterior 3.530.000, ahorro elegible 1.650.000 y condicional adicional 615.000 CLP. No se ejecutó la suite automatizada en este ajuste.
 
 
-## Simplificación del recorrido — 2026-10-22
+## Simplificación del recorrido — 2026-10-22 (histórica)
 
 Se aplicó `docs/plan-simplificacion.md` tras aprobación. Inicio directamente en carga vacía, tres destinos con progreso y distinción entre pendiente de validar y validado. El resumen de errores enlaza al archivo y el mensaje completo aparece junto al control. Las inconsistencias de negocio con ruta conocida se traducen en infraestructura; dominio y cálculos no cambiaron.
 
@@ -79,7 +79,7 @@ Comprobaciones de esta entrega:
 - Búsqueda de Gamma devuelve una posición y el motivo de ausencia de acuerdo está en su fila. Abrir las condiciones enfoca la posición correspondiente. Enter y Espacio abren/cierran el detalle; ArrowRight desplaza la tabla avanzada (40 px observados). Menú móvil modal, Escape y devolución del foco comprobados.
 - Revisadas capturas de escritorio 1440 × 1000 y móvil 390 × 844. No hubo desbordamiento horizontal de página. Capturas `simple-desktop.png`, `simple-mobile.png` y `simple-input.png` en `.impeccable/review/`.
 
-SC-005 no se midió con asesores reales. Publicación pendiente. El ZIP de entrega se actualiza con las fuentes y documentos públicos, conservando la exclusión del enunciado y anexos internos.
+SC-005 no se midió con asesores reales. La publicación estaba pendiente en esa revisión. El ZIP de entrega se actualiza con las fuentes y documentos públicos, conservando la exclusión del enunciado y anexos internos.
 
 ## Ajuste posterior — vista anterior del análisis
 
@@ -90,3 +90,9 @@ Tipos y compilación correctos; revisión estática sin errores. Revisados escri
 ### Legibilidad de posiciones
 
 Tabla con cifras y nombres a 13 px, datos secundarios y encabezados a 11 px, más separación entre filas y TAC elegible debajo de la serie. «bps» pasa a «puntos base»; se retira «Sin ahorro calculado» junto a los ceros. Tipos y compilación correctos; revisión visual en 1440 y 390 px, con desplazamiento de tabla accesible. No se ejecutaron pruebas automatizadas.
+
+## Repositorio y datos adicionales — 2026-10-22
+
+Git inicializado y sincronizado con `main`; mensajes de commit en español desde la instrucción del usuario. Se excluyen credenciales, dependencias, compilación, capturas y artefactos. El repositorio privado conserva documentación y originales de referencia.
+
+Se añadieron cuatro conjuntos JSON completos en `data/pruebas/` y cuatro variantes inválidas, con resultados esperados en su README. Los originales se conservan. No se han ejecutado esos nuevos casos manuales en la aplicación. El flujo de Pages utiliza Node 24, acciones actualizadas y Ubuntu 24.04; despliegue manual.

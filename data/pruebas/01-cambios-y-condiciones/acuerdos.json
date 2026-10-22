@@ -1,0 +1,47 @@
+{
+  "distribuidor": "Distribuidor de prueba",
+  "acuerdos": [
+    {
+      "emisor": "norte",
+      "estado": "active",
+      "vigente_desde": "2026-01-01",
+      "vigente_hasta": null,
+      "mandato": false,
+      "patrimonio_agregado_clp": 60000000,
+      "patrimonio_al": "2026-09-30",
+      "series": {
+        "norte-deuda": {
+          "BASE": 0.7,
+          "B": 0.4,
+          "P": 0.2,
+          "M": 0.1,
+          "CERRADA": 0.05
+        }
+      }
+    },
+    {
+      "emisor": "sur",
+      "estado": "active",
+      "vigente_desde": "2026-01-01",
+      "vigente_hasta": null,
+      "mandato": false,
+      "patrimonio_agregado_clp": 20000000,
+      "patrimonio_al": "2026-09-30",
+      "series": {
+        "sur-global": {
+          "BASE": 0.8,
+          "B": 0.5,
+          "APV": 0.3
+        }
+      }
+    }
+  ],
+  "productos_sin_serie": {
+    "deposito-prueba": {
+      "comision_distribucion_pct": 0
+    },
+    "seguro-ahorro-prueba": {
+      "comision_distribucion_pct": 2
+    }
+  }
+}

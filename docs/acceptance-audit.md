@@ -1,6 +1,6 @@
 # Auditoría de aceptación — Nivel 1
 
-Fecha: 2026-10-22. La auditoría separa implementación local verificada y entrega pública pendiente. No acredita publicación ni un estudio de usabilidad con asesores reales.
+Fecha: 2026-10-22. La auditoría conserva evidencias históricas y actualiza el estado de entrega. No acredita un estudio de usabilidad con asesores reales.
 
 ## Requisitos funcionales
 
@@ -23,7 +23,7 @@ Fecha: 2026-10-22. La auditoría separa implementación local verificada y entre
 | FR-021 | Inmutabilidad/determinismo; recorridos con dos cargas, rechazo y recuperación sin cifras obsoletas | Verificado |
 | FR-022 | Pruebas modifican montos, mínimos, apertura, APV, mandato, vigencia, habilitación y comisiones | Verificado |
 | FR-023 | README, SPEC, arquitectura y pruebas; ZIP autónomo con archivo de bloqueo | Verificado localmente |
-| FR-024 | Aplicación estática sin backend ni cuentas; compilación en raíz y ruta /varenne/ | Capacidad verificada; publicación pendiente |
+| FR-024 | Aplicación estática sin backend ni cuentas; compilación en raíz y ruta /varenne/ | Despliegue inicial completado en Pages |
 
 ## Resultados medibles
 
@@ -32,11 +32,11 @@ Fecha: 2026-10-22. La auditoría separa implementación local verificada y entre
 | SC-001, SC-003 | Pruebas de cifras completas, TAC con redondeo y presentación del ejemplo | Verificado |
 | SC-002 | 13 alternativas y cinco actuales en pruebas; interfaz de acceso consultable | Verificado localmente |
 | SC-004 | Pruebas de invariancia comercial y cambios de acceso | Verificado |
-| SC-005 | Resumen de costo/ahorro y motivo de Gamma en una única lista de posiciones | Implementado; tiempo con asesor real no medido |
+| SC-005 | Vista general, tabla de Posiciones y evidencia en Acceso y series | Implementado; tiempo con asesor real no medido |
 | SC-006 | Pie de contexto y clasificación/exclusiones por posición | Verificado localmente |
 | SC-007 | Pruebas de datos inválidos y recorrido UI de error sin resultados anteriores | Verificado en casos cubiertos |
 | SC-008 | Repetición del caso y diez variantes tres veces, más navegación móvil con teclado | Verificado en referencia y variantes cubiertas |
-| SC-009 | ZIP preparado; no repositorio remoto ni sitio público confirmado | Pendiente de destino y publicación |
+| SC-009 | Repositorio privado Kyogen-24/Varenne y despliegue inicial en https://kyogen-24.github.io/Varenne/ | Parcial: repositorio público excluido por decisión del usuario |
 
 ## Comandos y límites de evidencia
 
@@ -44,8 +44,16 @@ Fecha: 2026-10-22. La auditoría separa implementación local verificada y entre
 
 La revisión independiente corrigió dos fallos materiales de foco y oportunidades de cero. Su disposición `ship` cubre esas correcciones, no es una certificación financiera ni una aprobación del sitio público pendiente.
 
-## Revisión de simplificación — 2026-10-22
+## Revisión de simplificación — 2026-10-22 (histórica)
 
 Se reemplazaron las pestañas y la tabla repetida por un resumen y una única lista con evidencia desplegable. La carga inicia vacía y distingue selección pendiente de validación de archivo validado. Los errores se enlazan desde un resumen y se muestran junto a cada archivo. Las inconsistencias de negocio con ruta conocida se traducen conservando campo y fila.
 
-En esta revisión se ejecutó `npm test`: 99 pruebas aprobadas. El detalle del recorrido actual y sus límites se registra en `docs/construccion.md`. SC-005 sigue sin medirse con asesores reales. La publicación sigue pendiente.
+En esta revisión se ejecutó `npm test`: 99 pruebas aprobadas. El detalle del recorrido actual y sus límites se registra en `docs/construccion.md`. SC-005 sigue sin medirse con asesores reales. La publicación estaba pendiente en esa revisión.
+
+## Estado actual de entrega — 2026-10-22
+
+La vista de análisis volvió a las pestañas por preferencia del usuario. Se mantienen carga vacía, errores por archivo y tabla accesible; «bps» se presenta como «puntos base».
+
+El despliegue inicial del commit `76f7661` terminó correctamente, incluidos los trabajos build y deploy: https://github.com/Kyogen-24/Varenne/actions/runs/39852202218. El flujo actualiza acciones a Node 24 y fija Ubuntu 24.04; solo se ejecuta manualmente. El repositorio permanece privado.
+
+`data/pruebas/` incorpora cuatro conjuntos completos y cuatro archivos inválidos con guía de resultados esperados. Esos escenarios manuales nuevos no se han comprobado en la interfaz; no amplían por sí solos la evidencia de las 99 pruebas existentes. SC-005 sigue pendiente.

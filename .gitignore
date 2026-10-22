@@ -16,3 +16,4 @@ data/*
 !data/cartola.json
 !data/catalogo.json
 !data/acuerdos.json
+!data/pruebas/

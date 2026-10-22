@@ -33,4 +33,4 @@ Niveles 2 y 3 son posteriores. No se anuncia documento inmutable, controles comp
 
 ## Entrega
 
-Aplicación estática con marca propia Varenne. El flujo de Pages publica solo `dist`. La creación de repositorio remoto y publicación quedan pendientes; no se incluyen en esta construcción local. El enunciado y anexos internos no forman parte de la distribución pública.
+Aplicación estática con marca propia Varenne. El flujo de Pages publica solo `dist`. Repositorio privado `Kyogen-24/Varenne` y sitio `https://kyogen-24.github.io/Varenne/`. El despliegue desde `main` es manual mediante GitHub Actions. Por decisión posterior del usuario el repositorio permanece privado; el requisito original de repositorio público no se acredita. El enunciado y anexos internos no forman parte de la distribución pública.

@@ -1,0 +1,110 @@
+{
+  "version": "pruebas-2026-10",
+  "corte_costos": "2026-09-30",
+  "fuente_costos": "Escenarios de prueba",
+  "emisores": [
+    {
+      "id": "norte",
+      "nombre": "AGF Norte",
+      "tipo": "agf"
+    },
+    {
+      "id": "sur",
+      "nombre": "AGF Sur",
+      "tipo": "agf"
+    },
+    {
+      "id": "banco-prueba",
+      "nombre": "Banco de prueba",
+      "tipo": "banco"
+    },
+    {
+      "id": "seguro-prueba",
+      "nombre": "Seguros de prueba",
+      "tipo": "aseguradora"
+    }
+  ],
+  "productos": [
+    {
+      "id": "norte-deuda",
+      "emisor": "norte",
+      "nombre": "Norte Deuda",
+      "tipo": "mutual_fund",
+      "categoria": "prueba",
+      "liquidez_dias": 2,
+      "series": [
+        {
+          "codigo": "BASE",
+          "tac_pct": 2,
+          "minimo_clp": 0
+        },
+        {
+          "codigo": "B",
+          "tac_pct": 1,
+          "minimo_clp": 5000000
+        },
+        {
+          "codigo": "P",
+          "tac_pct": 0.5,
+          "minimo_clp": 50000000
+        },
+        {
+          "codigo": "M",
+          "tac_pct": 0.4,
+          "minimo_clp": 0,
+          "requiere_mandato": true
+        },
+        {
+          "codigo": "CERRADA",
+          "tac_pct": 0.2,
+          "minimo_clp": 0,
+          "abierta": false
+        }
+      ]
+    },
+    {
+      "id": "sur-global",
+      "emisor": "sur",
+      "nombre": "Sur Global",
+      "tipo": "mutual_fund",
+      "categoria": "prueba",
+      "liquidez_dias": 2,
+      "series": [
+        {
+          "codigo": "BASE",
+          "tac_pct": 3,
+          "minimo_clp": 0
+        },
+        {
+          "codigo": "B",
+          "tac_pct": 1.5,
+          "minimo_clp": 10000000
+        },
+        {
+          "codigo": "APV",
+          "tac_pct": 0.9,
+          "minimo_clp": 0,
+          "solo_apv": true
+        }
+      ]
+    },
+    {
+      "id": "deposito-prueba",
+      "emisor": "banco-prueba",
+      "nombre": "Depósito de prueba",
+      "tipo": "time_deposit",
+      "categoria": "prueba",
+      "liquidez_dias": 2,
+      "series": []
+    },
+    {
+      "id": "seguro-ahorro-prueba",
+      "emisor": "seguro-prueba",
+      "nombre": "Seguro de ahorro de prueba",
+      "tipo": "insurance_savings",
+      "categoria": "prueba",
+      "liquidez_dias": 2,
+      "series": []
+    }
+  ]
+}

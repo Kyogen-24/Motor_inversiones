@@ -1,16 +1,16 @@
 # Feature Specification: Diagnóstico y cambio de serie — Nivel 1
 
-**Feature Branch**: Sin rama Git; este directorio no tiene repositorio Git accesible.
+**Feature Branch**: `main`, repositorio privado `Kyogen-24/Varenne`.
 
 **Created**: 2026-10-22
 
-**Status**: Nivel 1 implementado localmente; aceptación de usabilidad y publicación pendientes.
+**Status**: Nivel 1 implementado y con despliegue en Pages; aceptación de usabilidad pendiente. Repositorio privado por decisión del usuario.
 
 **Input**: User description: "nivel 1, extrae todo el conteto del html y del md"
 
 ## Actualización de interacción — 2026-10-22
 
-Las instrucciones posteriores del usuario prevalecen sobre el flujo original: inicio vacío, carga manual y sin descargas de ejemplo ni etiquetas genéricas de datos ficticios en la interfaz. Se conserva la fuente recibida en el catálogo. La consulta reúne resumen y una única lista de posiciones, con series y evidencia desplegables. Los errores de estructura y consistencia deben identificar el archivo y el campo o fila afectados. El objetivo SC-005 requiere medición con asesores reales y sigue pendiente.
+Las instrucciones posteriores del usuario prevalecen sobre el flujo original: inicio vacío, carga manual y sin descargas de ejemplo ni etiquetas genéricas de datos ficticios en la interfaz. Se conserva la fuente recibida en el catálogo. Por preferencia posterior del usuario, la consulta conserva las pestañas Vista general, Posiciones y Acceso y series, con tabla compacta y sin descripciones redundantes. Los errores de estructura y consistencia deben identificar el archivo y el campo o fila afectados. El objetivo SC-005 requiere medición con asesores reales y sigue pendiente.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -316,6 +316,8 @@ con fondos; no reemplazan la base de 230.000.000 CLP para calcular la TAC poster
 - **SC-009**: La entrega final ofrece repositorio y sitio públicos con marca propia, documentación
   de uso y pruebas; el caso completo se puede revisar desde una sesión privada sin autenticación.
 
+La condición original de repositorio público de SC-009 no se considera cumplida: el usuario eligió mantenerlo privado. El sitio está en `https://kyogen-24.github.io/Varenne/`; la usabilidad de SC-005 sigue pendiente de medición.
+
 ## Assumptions
 
 - **Alcance acordado**: Nivel 1: leer, diagnosticar, evaluar acceso y comparar series del mismo
@@ -356,4 +358,4 @@ con fondos; no reemplazan la base de 230.000.000 CLP para calcular la TAC poster
   no se publica el enunciado ni se copia su diseño o marca en la solución del candidato.
 - **Dependencias**: Datos ficticios provistos y constitución v1.0.0. Su fecha de ratificación
   pendiente no altera las reglas del nivel 1. Stack, estructura de archivos y despliegue se
-  deciden en planificación. La aplicación de nivel 1 está construida; la publicación sigue pendiente.
+  deciden en planificación. La aplicación de nivel 1 está construida y dispone de despliegue manual en Pages.

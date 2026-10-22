@@ -11,7 +11,7 @@ npm ci
 npm run dev
 ```
 
-Abrir la dirección local mostrada por Vite. La aplicación inicia vacía. Abre Datos de entrada y selecciona los tres JSON de `data/` para analizar.
+Abrir la dirección local mostrada por Vite. La aplicación inicia vacía. Abre Archivos de entrada y selecciona los tres JSON de `data/` para analizar.
 
 ```bash
 npm run typecheck
@@ -30,7 +30,7 @@ npm run preview
 4. Usa Actualizar archivos para reemplazar uno o varios JSON. Los demás se conservan; seleccionar un reemplazo retira los resultados anteriores. Los errores aparecen junto al archivo afectado y se enlazan desde el resumen.
 5. Limpiar datos elimina archivos y resultados. Recargar la página también vuelve al inicio vacío. No se guarda una base de datos.
 
-Comprueba primero las cifras de referencia. Después modifica los JSON y vuelve a cargarlos para demostrar que los resultados dependen de las entradas.
+Comprueba primero las cifras de referencia. Después usa los conjuntos de [data/pruebas](data/pruebas/README.md) o modifica los JSON y vuelve a cargarlos. Hay escenarios de APV, mandato, acuerdos vencidos, ausencia de ahorro y entradas inválidas; sus resultados esperados aún requieren comprobación manual.
 
 Una selección nueva retira los resultados anteriores hasta analizar. Los errores indican la ruta afectada y permiten corregir los archivos. No se conservan cargas entre recargas del navegador ni se envían archivos a un servidor.
 
@@ -95,7 +95,11 @@ Se incluye un flujo de GitHub Actions para publicar exclusivamente `dist/` al ha
 VITE_BASE_PATH=/nombre-repositorio/ npm run build
 ```
 
-No se ha creado un repositorio remoto ni publicado el sitio. El directorio de trabajo contiene el enunciado local: **no subir el directorio completo a un repositorio público**. La solución pública debe contener `src`, configuración, archivo de bloqueo y documentación propia; excluir el enunciado HTML/MD y anexos internos. `dist/` contiene únicamente la aplicación y sus datos ficticios.
+Repositorio privado por decisión del usuario: [Kyogen-24/Varenne](https://github.com/Kyogen-24/Varenne), rama `main`. Sitio: [Varenne](https://kyogen-24.github.io/Varenne/).
+
+El despliegue es manual: **Actions → Publicar Varenne en Pages → Run workflow → main**. Subir a `main` no publica automáticamente. El flujo instala dependencias, ejecuta pruebas, comprueba tipos, compila y publica solo `dist/`. Utiliza Node 24, acciones con runtime Node 24 y Ubuntu 24.04.
+
+El repositorio privado conserva los originales HTML/MD y anexos internos como referencia; no se incluyen en el sitio. Antes de hacer público el repositorio se debe preparar una copia sin esos documentos. Las credenciales, compilación, dependencias instaladas, capturas y archivos generados están excluidos por `.gitignore`. En `data/` se versionan únicamente los ejemplos originales y `data/pruebas/`; no añadir archivos reales de clientes.
 
 ## Límites funcionales
 

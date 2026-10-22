@@ -1,0 +1,48 @@
+{
+  "cliente": {
+    "referencia": "PRUEBA-001",
+    "perfil_riesgo": "moderado",
+    "perfil_evaluado_el": "2026-08-01",
+    "plan_apv": false
+  },
+  "corte": "2026-09-30",
+  "moneda": "CLP",
+  "posiciones": [
+    {
+      "producto": "norte-deuda",
+      "serie": "BASE",
+      "cuotas": 10000,
+      "valor_cuota": 1000,
+      "monto_clp": 10000000
+    },
+    {
+      "producto": "sur-global",
+      "serie": "BASE",
+      "cuotas": 20000,
+      "valor_cuota": 1000,
+      "monto_clp": 20000000
+    },
+    {
+      "producto": "deposito-prueba",
+      "serie": null,
+      "cuotas": null,
+      "valor_cuota": null,
+      "monto_clp": 5000000
+    },
+    {
+      "producto": null,
+      "serie": null,
+      "cuotas": null,
+      "valor_cuota": null,
+      "monto_clp": 2000000,
+      "descripcion_original": "Fondo pendiente de identificar"
+    },
+    {
+      "producto": "seguro-ahorro-prueba",
+      "serie": null,
+      "cuotas": null,
+      "valor_cuota": null,
+      "monto_clp": 3000000
+    }
+  ]
+}
