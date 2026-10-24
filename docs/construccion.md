@@ -25,13 +25,13 @@ Capturas locales: `.impeccable/review/desktop.png`, `mobile.png`, `mobile-data.p
 
 La continuación solicitó verificar la entrega completa, incluidas pruebas y criterios de aceptación. Se incorporó Vitest y se ejecutaron **99 pruebas: todas pasan**. Las pruebas están en `src/application/analizarCartola.test.ts` y `src/infrastructure/input.test.ts`. `npm run build` vuelve a pasar, incluida comprobación estricta de tipos de las pruebas.
 
-Se compiló con `VITE_BASE_PATH=/varenne/` y se abrió la compilación mediante preview en esa ruta. Cargó sin errores de consola. Mediante MCP Playwright se comprobaron cargas sucesivas con un cliente diferente y cambio de monto: costo 4.550.000 CLP, ahorro 1.455.000 CLP y regreso a la cartola original. Se verificó rechazo de sintaxis inválida, ausencia del resultado anterior tras una entrada inválida, cartola vacía, pantalla de series vacía y recuperación con el ejemplo. Se esperan estados visibles después de la lectura asíncrona; una primera comprobación sin esa espera fue descartada como evidencia.
+La compilación inicial se comprobó en una subruta de GitHub Pages y se abrió mediante preview. Cargó sin errores de consola. Mediante MCP Playwright se comprobaron cargas sucesivas con un cliente diferente y cambio de monto: costo 4.550.000 CLP, ahorro 1.455.000 CLP y regreso a la cartola original. Se verificó rechazo de sintaxis inválida, ausencia del resultado anterior tras una entrada inválida, cartola vacía, pantalla de series vacía y recuperación con el ejemplo. Se esperan estados visibles después de la lectura asíncrona; una primera comprobación sin esa espera fue descartada como evidencia.
 
 Tailwind limita el escaneo a presentación para producir el mismo CSS al compilar la entrega aislada, sin depender de archivos internos del espacio de trabajo. El flujo de Pages ejecuta `npm test` antes de compilar. README.md y AGENTS.md incluyen los comandos.
 
 ## Estado de publicación
 
-Repositorio privado [Kyogen-24/Varenne](https://github.com/Kyogen-24/Varenne), rama `main`; sitio [Varenne](https://kyogen-24.github.io/Varenne/). El despliegue inicial `76f7661` terminó correctamente en GitHub Actions. Solo se publica `dist/`, mediante ejecución manual. SC-009 es parcial porque el usuario eligió un repositorio privado.
+La publicación en un repositorio público propio y en GitHub Pages sigue pendiente. El despliegue inicial `76f7661` terminó correctamente en GitHub Actions. Solo se publica `dist/`, mediante ejecución manual.
 
 ## Herramientas con límites
 

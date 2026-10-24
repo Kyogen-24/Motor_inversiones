@@ -2,6 +2,7 @@
 
 **Purpose**: Validar integridad y calidad de requisitos antes de planificación.
 **Created**: 2026-10-22
+**Updated**: 2026-10-24 — aclaración de patrimonio agregado al corte en R04.
 **Feature**: [spec.md](../spec.md)
 **Review Ownership**: Revisión de calidad de requisitos realizada durante `$speckit-specify`.
 **Marker Semantics**: `[x]` indica calidad revisada, no implementación terminada.
@@ -37,7 +38,7 @@
 
 Revisión final: 16/16 criterios satisfechos; sin aclaraciones bloqueantes.
 
-- Historias 1 a 4 y SC-001 a SC-009 cubren el flujo principal y resultados de negocio.
+- Historias 1 a 4 y SC-001 a SC-010 cubren el flujo principal y resultados de negocio.
 - FR-001 a FR-007: historia 1, casos límite y tabla de diagnóstico.
 - FR-008 a FR-013: historia 2 y tabla ordenada de R04, incluida evidencia por alternativa.
 - FR-014 a FR-018: historia 3 y tabla de ahorro; prueba de variación de comisiones.
@@ -49,6 +50,18 @@ Revisión final: 16/16 criterios satisfechos; sin aclaraciones bloqueantes.
   y contiene los cinco conjuntos JSON completos. Coinciden entre HTML y Markdown.
 - Se concretaron como supuestos revisables: JSON sin CSV, inicio estricto de acuerdo,
   tolerancia de valorización de 1 CLP, montos declarados como base y política de empates.
+- Actualización de R04: FR-012, FR-013, US2/AC6–AC10, US3/AC6 y SC-010 especifican
+  fecha anterior/igual/posterior al corte, ticket suficiente, preservación de reglas 0 a 3,
+  aislamiento por serie y exclusión de oportunidades de ahorro de series bloqueadas.
+- El caso mixto con ticket 60 M, mínimos B 5 M / F 100 M y patrimonio 180 M posterior
+  tiene resultados inequívocos: B regla 6 y F regla 5 con motivo temporal. No cambia
+  las cifras del ejemplo original, cuyo patrimonio está fechado en el corte.
+- Se distingue validez temporal de validación estructural: el dato futuro no invalida
+  globalmente el archivo; los campos ausentes o fechas imposibles siguen bajo FR-003.
+- No se introduce antigüedad máxima ni nueva acreditación histórica en el contrato.
+  La regla 3 se conserva y sus tareas exigen acreditar el mínimo y reevaluar.
+- Los 16 criterios de calidad se revisaron para este ajuste; no quedan aclaraciones.
+  El ajuste temporal queda listo para planificación y pendiente de implementación.
 - No se ejecutaron pruebas de aplicación: esta revisión valida documentación.
 - No hay `.specify/extensions.yml`; no existen hooks previos ni posteriores que despachar.
 - La constitución conserva un TODO de ratificación ajeno a los requisitos de esta funcionalidad.

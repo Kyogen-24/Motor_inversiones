@@ -37,6 +37,16 @@ describe('importación JSON y normalización', () => {
   it('acepta fecha bisiesta real', () => {
     expect(interpretar('cartola', { ...cartola, corte: '2028-02-29' }).corte).toBe('2028-02-29');
   });
+  it('acepta patrimonio posterior bien formado y rechaza fechas de patrimonio inválidas', () => {
+    const futuro = structuredClone(acuerdos);
+    futuro.acuerdos[0].patrimonio_al = '2026-10-01';
+    expect(interpretar('acuerdos', futuro).acuerdos[0].patrimonio_al).toBe('2026-10-01');
+    futuro.acuerdos[0].patrimonio_al = '2026-02-30';
+    expect(() => interpretar('acuerdos', futuro)).toThrow('acuerdos.acuerdos.0.patrimonio_al: Fecha inválida');
+    const sinFecha = structuredClone(acuerdos) as unknown as { acuerdos: Array<Record<string, unknown>> };
+    delete sinFecha.acuerdos[0].patrimonio_al;
+    expect(() => interpretar('acuerdos', sinFecha)).toThrow('acuerdos.acuerdos.0.patrimonio_al');
+  });
   it('acepta moneda CLP y rechaza moneda ajena', () => {
     expect(() => interpretar('cartola', { ...cartola, moneda: 'UF' })).toThrow('cartola.moneda');
   });

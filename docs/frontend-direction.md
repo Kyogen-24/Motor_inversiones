@@ -1,4 +1,4 @@
-# Dirección de interfaz — Varenne
+# Dirección de interfaz — Motor_inversiones
 
 ## Objetivo
 
@@ -19,7 +19,7 @@ La fuente visual aprobada es `DESIGN.md`, referencia Attio. Se conservan el blan
 
 Refero MCP se consultó para estilos Attio y tablas con detalle lateral. Ambas llamadas devolvieron `NO_SUBSCRIPTION`; no se atribuyen hallazgos a pantallas no accesibles. Se utiliza la referencia completa suministrada en DESIGN.md y las reglas de oficio de Impeccable. La interfaz de trabajo adapta la densidad del diseño, sin copiar su estructura de marketing.
 
-La identidad propia es Varenne. No se publica el enunciado. Iconos de Lucide acompañan etiquetas. Los elementos nativos cubren botones, formularios, tablas y expansiones; no se incorpora shadcn/ui mientras no exista una interacción que lo necesite. La memoria visual del producto es la comparación de costos con dos trazos paralelos y el detalle trazable de cada serie.
+La interfaz usa un nombre descriptivo y no incorpora logotipo. No se publica el enunciado. Iconos de Lucide acompañan etiquetas. Los elementos nativos cubren botones, formularios, tablas y expansiones; no se incorpora shadcn/ui mientras no exista una interacción que lo necesite. La memoria visual del producto es la comparación de costos con dos trazos paralelos y el detalle trazable de cada serie.
 
 ## Vista de análisis — 2026-10-22
 

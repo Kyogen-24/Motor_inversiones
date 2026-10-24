@@ -1,4 +1,4 @@
-name: Publicar Varenne en Pages
+name: Publicar sitio en Pages
 on:
   workflow_dispatch:
 permissions:

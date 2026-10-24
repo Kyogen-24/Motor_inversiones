@@ -1,4 +1,4 @@
-# Varenne
+# Motor_inversiones
 
 Diagnóstico de costos y comparación de series de inversión con evidencia. **Nivel 1**: R01, R02, R04 y R05. Interfaz en español y datos ficticios. El cálculo ocurre en el navegador, sin cuentas, backend, base de datos ni API.
 
@@ -30,7 +30,9 @@ npm run preview
 4. Usa Actualizar archivos para reemplazar uno o varios JSON. Los demás se conservan; seleccionar un reemplazo retira los resultados anteriores. Los errores aparecen junto al archivo afectado y se enlazan desde el resumen.
 5. Limpiar datos elimina archivos y resultados. Recargar la página también vuelve al inicio vacío. No se guarda una base de datos.
 
-Comprueba primero las cifras de referencia. Después usa los conjuntos de [data/pruebas](data/pruebas/README.md) o modifica los JSON y vuelve a cargarlos. Hay escenarios de APV, mandato, acuerdos vencidos, ausencia de ahorro y entradas inválidas; sus resultados esperados aún requieren comprobación manual.
+Comprueba primero las cifras de referencia. Después usa los conjuntos de [data/pruebas](data/pruebas/README.md) o modifica los JSON y vuelve a cargarlos. Los cuatro escenarios de APV, mandato, acuerdos vencidos y ausencia de ahorro, y los cuatro archivos inválidos, se comprobaron en la interfaz local el 2026-10-24.
+
+La previsualización conserva descripciones originales, decimales y campos adicionales de los tres archivos. Abre cada producto o acuerdo para revisar sus series y datos; las tablas muestran hasta 50 registros por página, con búsqueda para conjuntos grandes. Los campos adicionales anidados se muestran con su ruta. Las banderas omitidas de serie se presentan con los valores normalizados documentados. En el análisis, Posiciones separa el diagnóstico de costos y la comparación de series; Acceso y series conserva reglas, motivos, evidencia y tareas condicionales.
 
 Una selección nueva retira los resultados anteriores hasta analizar. Los errores indican la ruta afectada y permiten corregir los archivos. No se conservan cargas entre recargas del navegador ni se envían archivos a un servidor.
 
@@ -65,6 +67,8 @@ Referencias oficiales: [Vite](https://vite.dev/guide/), [integración Tailwind](
 
 La fecha de corte determina la vigencia del acuerdo: inicio estrictamente anterior y fin inclusivo. La elegibilidad se detiene en la primera coincidencia de R04. El ticket es individual; no se suman posiciones para alcanzar mínimos.
 
+Cuando el ticket no alcanza el mínimo, R04 acepta patrimonio agregado sólo si su fecha es anterior o igual al corte de la cartola. Un patrimonio posterior permanece visible como evidencia, pero aplica regla 5 con motivo temporal; no invalida la carga ni afecta otras series de la misma AGF. Si falta mandato, prevalece regla 3 y las tareas exigen acreditar el mínimo al corte o alcanzarlo con el ticket antes de reevaluar. Los resultados actuales usan `nivel-1.1`.
+
 El costo anual es monto × TAC / 100. La TAC ponderada utiliza únicamente montos computables; depósitos y efectivo entran con costo cero. Las líneas desconocidas, seguros y otros productos quedan declarados aparte. ETF requiere `tac_pct` explícita en el producto. Una serie desconocida de un fondo deja la posición sin identificar.
 
 Se emplea una configuración privada de decimal.js con **40 dígitos significativos** y ROUND_HALF_UP. Las cifras del resultado se serializan como cadenas decimales. No se redondea para presentación durante los cálculos. CLP al peso, TAC agregada a cuatro decimales y pesos a dos. Se conserva monto declarado; diferencia de valorización mayor que 1 CLP genera advertencia.
@@ -87,6 +91,8 @@ Estas cifras son criterios de aceptación; no están codificadas en el motor.
 
 Las pruebas utilizan los JSON ficticios y sus variaciones; no montan React ni necesitan un servidor. Las revisiones visuales e interactivas se documentan en `docs/construccion.md`. Pages ejecuta las pruebas y la compilación antes de subir el sitio.
 
+`src/presentation/tables.test.tsx` verifica además el HTML generado por las tablas: contenido completo y precisión de la previsualización, datos adicionales de seguros, diagnóstico, totales, exclusiones y ahorro condicional. No requiere un navegador para ejecutarse.
+
 ## Publicación en GitHub Pages
 
 Se incluye un flujo de GitHub Actions para publicar exclusivamente `dist/` al habilitar Pages con origen GitHub Actions. La ruta base se obtiene del nombre del repositorio y funciona también con repositorios `usuario.github.io`. Para una ruta distinta:
@@ -95,9 +101,9 @@ Se incluye un flujo de GitHub Actions para publicar exclusivamente `dist/` al ha
 VITE_BASE_PATH=/nombre-repositorio/ npm run build
 ```
 
-Repositorio privado por decisión del usuario: [Kyogen-24/Varenne](https://github.com/Kyogen-24/Varenne), rama `main`. Sitio: [Varenne](https://kyogen-24.github.io/Varenne/).
+La publicación en un repositorio público propio y en GitHub Pages sigue pendiente. Las direcciones se añadirán cuando se configure esa entrega.
 
-El despliegue es manual: **Actions → Publicar Varenne en Pages → Run workflow → main**. Subir a `main` no publica automáticamente. El flujo instala dependencias, ejecuta pruebas, comprueba tipos, compila y publica solo `dist/`. Utiliza Node 24, acciones con runtime Node 24 y Ubuntu 24.04.
+El despliegue es manual: **Actions → Publicar sitio en Pages → Run workflow → main**. Subir a `main` no publica automáticamente. El flujo instala dependencias, ejecuta pruebas, comprueba tipos, compila y publica solo `dist/`. Utiliza Node 24, acciones con runtime Node 24 y Ubuntu 24.04.
 
 El repositorio privado conserva los originales HTML/MD y anexos internos como referencia; no se incluyen en el sitio. Antes de hacer público el repositorio se debe preparar una copia sin esos documentos. Las credenciales, compilación, dependencias instaladas, capturas y archivos generados están excluidos por `.gitignore`. En `data/` se versionan únicamente los ejemplos originales y `data/pruebas/`; no añadir archivos reales de clientes.
 

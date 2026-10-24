@@ -65,6 +65,7 @@ export interface Acceso {
     minimo: string;
     agregado: string | null;
     patrimonioAl: string | null;
+    corte: string;
     mandato: boolean;
     planApv: boolean;
     habilitada: boolean;
@@ -103,7 +104,7 @@ export interface ResultadoPosicion {
   advertencias: Advertencia[];
 }
 export interface Analisis {
-  versionReglas: 'nivel-1.0';
+  versionReglas: 'nivel-1.1';
   contexto: { cartola: Cartola; catalogo: Catalogo; acuerdos: Acuerdos };
   posiciones: ResultadoPosicion[];
   totales: {

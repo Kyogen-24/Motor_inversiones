@@ -24,8 +24,8 @@ export default function Navigation({ vista, abierto, navegar, alCerrar }: Props)
   }, [abierto]);
   const activo = (destino: Vista) => vista === destino ? 'is-active' : '';
   return (
-    <dialog ref={menu} aria-label="Navegación de Varenne" onCancel={e => { e.preventDefault(); alCerrar(); }} className="ts-sidebar">
-      <button className="ts-brand" onClick={() => navegar('analisis')} aria-label="Varenne, inicio"><span className="ts-brand-mark" aria-hidden="true"><svg viewBox="0 0 28 28"><path d="m5 6 9 17L23 6M10 6l4 8 4-8" /></svg></span>varenne<span className="ts-brand-period">.</span></button>
+    <dialog ref={menu} aria-label="Navegación del Motor_inversiones" onCancel={e => { e.preventDefault(); alCerrar(); }} className="ts-sidebar">
+      <button className="ts-brand" onClick={() => navegar('analisis')} aria-label="Motor_inversiones, inicio">Motor_inversiones</button>
       <button className="ts-mobile-close ts-icon-button" aria-label="Cerrar navegación" onClick={alCerrar}><X size={18} /></button>
       <div className="ts-workspace"><span className="ts-workspace-avatar">V</span><div>Espacio de análisis<span>Análisis de inversiones</span></div></div>
       <div className="ts-nav-label">ESPACIO DE TRABAJO</div>

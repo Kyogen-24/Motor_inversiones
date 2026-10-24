@@ -15,4 +15,5 @@ export function numero(value: string | null, places = 0): string {
 }
 export const clp = (value: string | null) => value === null ? 'No disponible' : `$${numero(value)}`;
 export const pct = (value: string | null, places = 2) => value === null ? 'No disponible' : `${numero(value, places)} %`;
-export const fecha = (value: string) => new Intl.DateTimeFormat('es-CL', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${value}T00:00:00Z`));
+const formatoFecha = new Intl.DateTimeFormat('es-CL', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' });
+export const fecha = (value: string) => formatoFecha.format(new Date(`${value}T00:00:00Z`));

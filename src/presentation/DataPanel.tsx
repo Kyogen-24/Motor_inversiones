@@ -56,10 +56,10 @@ export default function DataPanel({ datos, validado, actualizando, erroresArchiv
         {invalido && <p className="ts-file-error" id={`error-${f.tipo}`}>{erroresArchivo[f.tipo]}</p>}
       </div>;
     })}</div>
-    <InputReview datos={datos} nombres={{ cartola: archivos.cartola?.name || nombres.cartola, catalogo: archivos.catalogo?.name || nombres.catalogo, acuerdos: archivos.acuerdos?.name || nombres.acuerdos }} errores={erroresArchivo} />
     <div className="ts-input-actions"><button className="ts-button ts-button--primary" onClick={alAnalizar} disabled={cargando || !listo}><Upload size={16} aria-hidden="true" />{cargando ? 'Revisando archivos…' : 'Analizar cartola'}</button>
       <button className="ts-button" onClick={alLimpiar} disabled={cargando}><RotateCcw size={15} aria-hidden="true" />Limpiar datos</button>
       <p>Hasta 5 MB por archivo.</p>
     </div>
+    <InputReview datos={datos} nombres={{ cartola: archivos.cartola?.name || nombres.cartola, catalogo: archivos.catalogo?.name || nombres.catalogo, acuerdos: archivos.acuerdos?.name || nombres.acuerdos }} errores={erroresArchivo} />
   </section>;
 }

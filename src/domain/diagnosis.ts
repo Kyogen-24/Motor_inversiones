@@ -12,9 +12,11 @@ export function diagnosticarPosicion(entrada: Posicion, indice: number, cartola:
   const clasificacion = clasificarCosto(producto, conocida, tac);
   const costo = tac === undefined ? null : decimal(entrada.monto_clp).mul(tac).div(100).toString();
   const tasa = tac === undefined ? null : decimal(tac).toString();
+  const emisor = producto ? catalogo.emisores.find(e => e.id === producto.emisor) : undefined;
+  if (producto && !emisor) throw new Error(`Emisor del producto no encontrado: ${producto.emisor}`);
   const result: ResultadoPosicion = {
     indice, entrada: { ...entrada }, nombre: producto?.nombre ?? entrada.descripcion_original ?? entrada.producto ?? 'Posición sin identificar',
-    emisor: producto ? catalogo.emisores.find(e => e.id === producto.emisor)!.nombre : null,
+    emisor: emisor?.nombre ?? null,
     tipo: producto?.tipo ?? null, ...clasificacion,
     monto: decimal(entrada.monto_clp).toString(), peso: null, tac: tasa, costo,
     alternativas: [], elegida: entrada.serie, tacPosterior: tasa, costoPosterior: costo,

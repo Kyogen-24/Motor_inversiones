@@ -6,7 +6,7 @@ Son entradas manuales; la aplicación no las carga automáticamente. Esta carpet
 
 ## Escenarios válidos
 
-Valores de referencia calculados a partir de los datos; pendientes de comprobar en la aplicación.
+Valores de referencia calculados a partir de los datos y comprobados en la interfaz local el 2026-10-24. Los cuatro conjuntos reproducen los costos y ahorros de esta tabla. También se comprobaron los cuatro errores de la sección siguiente y la recuperación con el archivo corregido.
 
 | Carpeta | Qué revisar | Costo anual actual | Ahorro anual elegible | Costo anual posterior |
 |---|---|---:|---:|---:|

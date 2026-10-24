@@ -112,6 +112,88 @@ describe('diagnóstico de referencia R02 y comparación R05', () => {
   });
 });
 
+describe('patrimonio agregado al corte R04', () => {
+  const conPatrimonio = (patrimonioAl: string, patrimonio = 180000000) => {
+    const datos = cargarEjemplo();
+    datos.acuerdos.acuerdos[0].patrimonio_al = patrimonioAl;
+    datos.acuerdos.acuerdos[0].patrimonio_agregado_clp = patrimonio;
+    return datos;
+  };
+
+  it('preserva el diagnóstico aunque el patrimonio declarado sea posterior al corte', () => {
+    const original = ejecutar(cargarEjemplo());
+    const futuro = ejecutar(conPatrimonio('2026-10-01'));
+    expect(futuro.versionReglas).toBe('nivel-1.1');
+    expect(futuro.totales).toMatchObject({ computable: original.totales.computable, costo: original.totales.costo, tac: original.totales.tac, ahorro: '1650000' });
+  });
+
+  it.each(['2026-09-29', '2026-09-30'])('acepta agregación al %s cuando el ticket no alcanza el mínimo', patrimonioAl => {
+    const resultado = acceso(conPatrimonio(patrimonioAl), 0, 'F');
+    expect(resultado).toMatchObject({ estado: 'conditional', regla: 4, evidencia: { patrimonioAl, corte: '2026-09-30' } });
+  });
+
+  it('acepta el agregado igual al mínimo y omite su fecha cuando el ticket basta', () => {
+    expect(acceso(conPatrimonio('2026-09-30', 100000000), 0, 'F')).toMatchObject({ estado: 'conditional', regla: 4 });
+    const ticketSuficiente = conPatrimonio('2026-10-01');
+    ticketSuficiente.cartola.posiciones[0].monto_clp = 100000000;
+    expect(acceso(ticketSuficiente, 0, 'F')).toMatchObject({ estado: 'eligible', regla: 6 });
+  });
+
+  it('aísla la fecha futura a la serie que necesita agregación y excluye F de R05', () => {
+    const resultado = ejecutar(conPatrimonio('2026-10-01'));
+    const deuda = resultado.posiciones[0];
+    const rentaVariable = resultado.posiciones[1];
+    expect(deuda.alternativas.find(a => a.serie.codigo === 'B')).toMatchObject({ estado: 'eligible', regla: 6 });
+    expect(deuda.alternativas.find(a => a.serie.codigo === 'F')).toMatchObject({
+      estado: 'blocked', regla: 5,
+      evidencia: { agregado: '180000000', patrimonioAl: '2026-10-01', corte: '2026-09-30' },
+    });
+    expect(deuda.alternativas.find(a => a.serie.codigo === 'F')!.motivo).toMatch(/posterior al corte/i);
+    expect(rentaVariable.alternativas.find(a => a.serie.codigo === 'F')).toMatchObject({ estado: 'blocked', regla: 5 });
+    expect(deuda.alternativas.find(a => a.serie.codigo === 'M')).toMatchObject({ estado: 'conditional', regla: 3 });
+    expect(deuda.condicional).toMatchObject({ serie: 'M', adicional: '270000' });
+    expect(resultado.totales).toMatchObject({ ahorro: '1650000', condicional: '270000' });
+  });
+
+  it('preserva reglas anteriores y distingue un agregado insuficiente', () => {
+    const futuro = conPatrimonio('2026-10-01');
+    const producto = futuro.catalogo.productos[0];
+    producto.series.find(s => s.codigo === 'F')!.requiere_mandato = true;
+    expect(acceso(futuro, 0, 'F')).toMatchObject({ estado: 'conditional', regla: 3 });
+    const insuficiente = acceso(conPatrimonio('2026-09-30', 90000000), 0, 'F');
+    expect(insuficiente).toMatchObject({ estado: 'blocked', regla: 5 });
+    expect(insuficiente.motivo).toMatch(/inferior al mínimo/i);
+  });
+
+  it.each([
+    ['sin habilitación', (datos: Entradas) => { delete datos.acuerdos.acuerdos[0].series['alfa-deuda-uf'].F; }, 0],
+    ['serie cerrada', (datos: Entradas) => { datos.catalogo.productos[0].series.find(s => s.codigo === 'F')!.abierta = false; }, 1],
+    ['restricción APV', (datos: Entradas) => { datos.catalogo.productos[0].series.find(s => s.codigo === 'F')!.solo_apv = true; }, 2],
+    ['mandato ausente', (datos: Entradas) => { datos.catalogo.productos[0].series.find(s => s.codigo === 'F')!.requiere_mandato = true; }, 3],
+  ] as const)('no sustituye regla previa: %s', (_, cambiar, regla) => {
+    const datos = conPatrimonio('2026-10-01'); cambiar(datos);
+    expect(acceso(datos, 0, 'F').regla).toBe(regla);
+  });
+
+  it('exige acreditar el mínimo al corte al condicional por mandato y lo reevalúa al formalizarlo', () => {
+    const futuro = conPatrimonio('2026-10-01');
+    futuro.catalogo.productos[0].series.find(s => s.codigo === 'M')!.minimo_clp = 100000000;
+    const conMandato = structuredClone(futuro);
+    conMandato.acuerdos.acuerdos[0].mandato = true;
+    expect(acceso(futuro, 0, 'M')).toMatchObject({ estado: 'conditional', regla: 3 });
+    expect(acceso(conMandato, 0, 'M')).toMatchObject({ estado: 'blocked', regla: 5 });
+    expect(ejecutar(futuro).posiciones[0].condicional!.tareas.join(' ')).toMatch(/al corte/i);
+  });
+
+  it('no mezcla estados entre cargas original, futura y original', () => {
+    const original = ejecutar(cargarEjemplo());
+    const futura = ejecutar(conPatrimonio('2026-10-01'));
+    const restaurada = ejecutar(cargarEjemplo());
+    expect(futura.posiciones[0].alternativas.find(a => a.serie.codigo === 'F')).toMatchObject({ regla: 5 });
+    expect(restaurada).toEqual(original);
+  });
+});
+
 describe('R01 y R04: primera coincidencia y límites', () => {
   it.each([
     [0, 'B', 'eligible', 6], [0, 'F', 'conditional', 4], [0, 'M', 'conditional', 3], [0, 'APV', 'blocked', 2],

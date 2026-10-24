@@ -17,7 +17,7 @@ export function analizarCartola(cartola: Cartola, catalogo: Catalogo, acuerdos: 
   const costoPosterior = sumar(computables.map(p => p.costoPosterior!)).toString();
   for (const posicion of computables) posicion.peso = porcentaje(posicion.monto, computable);
   return {
-    versionReglas: 'nivel-1.0', contexto: structuredClone({ cartola, catalogo, acuerdos }), posiciones,
+    versionReglas: 'nivel-1.1', contexto: structuredClone({ cartola, catalogo, acuerdos }), posiciones,
     totales: {
       monto, computable, identificado: sumar(identificadas.map(p => p.monto)).toString(), sinIdentificar,
       porcentajeSinIdentificar: porcentaje(sinIdentificar, monto),
@@ -28,7 +28,10 @@ export function analizarCartola(cartola: Cartola, catalogo: Catalogo, acuerdos: 
       porcentajeAhorro: porcentaje(ahorro, costo), porcentajeCostoPosterior: porcentaje(costoPosterior, costo), computables: computables.length,
       identificadas: identificadas.length, cambios: posiciones.filter(p => p.elegida !== p.entrada.serie).length,
     },
-    acuerdosVigentes: acuerdos.acuerdos.filter(a => vigente(a, cartola.corte)).map(a =>
-      catalogo.emisores.find(e => e.id === a.emisor)!.nombre),
+    acuerdosVigentes: acuerdos.acuerdos.filter(a => vigente(a, cartola.corte)).map(a => {
+      const emisor = catalogo.emisores.find(e => e.id === a.emisor);
+      if (!emisor) throw new Error(`Emisor del acuerdo no encontrado: ${a.emisor}`);
+      return emisor.nombre;
+    }),
   };
 }
