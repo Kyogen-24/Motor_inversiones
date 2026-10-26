@@ -29,7 +29,7 @@ npm run preview
 3. En Posiciones, busca un fondo. La flecha de cada fila abre Acceso y series, con alternativas, reglas y evidencia.
 4. Usa Actualizar archivos para reemplazar uno o varios JSON. Los demás se conservan; seleccionar un reemplazo retira los resultados anteriores. Los errores aparecen junto al archivo afectado y se enlazan desde el resumen.
 5. Limpiar datos elimina archivos y resultados. Recargar la página también vuelve al inicio vacío. No se guarda una base de datos.
-6. Para costo, carga además `data/supuestos.json`, analiza y pulsa **Generar mejora de costo**. Para meta, agrega `data/meta.json` y pulsa **Armar propuesta para la meta**. La generación usa un Worker local; puedes navegar durante el cálculo. Cambiar un archivo o limpiar cancela el cálculo anterior.
+6. Para costo, carga además `data/supuestos.json`, analiza y abre **Mejora de costos** en el menú lateral; pulsa **Generar mejora de costo**. Para meta, agrega `data/meta.json`, vuelve a analizar y abre **Planificación de meta**; pulsa **Armar propuesta para la meta**. Cada vista conserva su resultado al navegar. La generación usa un Worker local; puedes navegar durante el cálculo. Cambiar un archivo o limpiar cancela el cálculo anterior e invalida ambos resultados.
 
 En nivel 2 se mantienen o reducen volatilidad y costo sin usar retornos ni comisiones para seleccionar. Se respetan categoría, elegibilidad, perfil y concentración. Se conserva una tenencia barata aunque no admita compras nuevas. La búsqueda determinista explora hasta 50.000 nodos: informa la mejor propuesta encontrada, sin certificar un óptimo global ni la inexistencia de otras soluciones. Las exclusiones y tareas condicionales permanecen visibles.
 

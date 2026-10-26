@@ -309,9 +309,15 @@ td small { display: block; font-size: 9px; color: var(--color-muted); margin-top
 .ts-proposal-card dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .ts-proposal-card dt { color: var(--color-muted); font-size: 11px; }
 .ts-proposal-card dd { margin: 4px 0 0; font-size: 15px; font-variant-numeric: tabular-nums; }
+.ts-proposal-card dl > div { min-width: 0; overflow-wrap: anywhere; }
+.ts-amount { display: flex; flex-direction: column; gap: 6px; }
+.ts-amount small { color: var(--color-muted); font-size: 11px; font-weight: 400; line-height: 1.5; }
+.ts-proposal .ts-capital-summary { margin: 18px 0 24px; }
+.ts-capital-summary dd { font-size: 15px; }
 .ts-proposal-table { margin-top: 16px; overflow: hidden; }
 .ts-proposal-table .ts-table-scroll { margin-inline: -18px; padding-inline: 18px; }
 .ts-proposal-table td, .ts-proposal-table th { min-width: 110px; }
+.ts-proposal-table td { white-space: pre-line; }
 .ts-proposal ul { margin: 12px 0 0; padding-left: 20px; color: var(--color-muted); font-size: 12px; line-height: 1.7; }
 @media (max-width: 580px) { .ts-proposal-hero { display: block; padding: 18px; } .ts-proposal-hero strong { display: block; text-align: left; margin-top: 18px; } .ts-proposal-grid { grid-template-columns: 1fr; } }
 

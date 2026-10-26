@@ -12,7 +12,8 @@ const nombresVacios: Record<TipoEntrada, string> = { cartola: '', catalogo: '', 
 export function useAppWorkflow() {
   const [vista, setVista] = useState<Vista>('datos');
   const [resultado, setResultado] = useState<Analisis | null>(null);
-  const [propuesta, setPropuesta] = useState<PropuestaCosto | PropuestaMeta | null>(null);
+  const [propuestas, setPropuestas] = useState<{ costo?: PropuestaCosto; meta?: PropuestaMeta }>({});
+  const propuesta = vista === 'costo' ? propuestas.costo : vista === 'meta' ? propuestas.meta : undefined;
   const [entradas, setEntradas] = useState<Partial<Entradas>>({});
   const [revisionDatos, setRevisionDatos] = useState<Partial<Entradas>>({});
   const [validado, setValidado] = useState(false);
@@ -67,13 +68,13 @@ export function useAppWorkflow() {
     setArchivos(prev => ({ ...prev, [tipo]: archivo }));
     setValidado(false); setCargando(true);
     setRevisionDatos(prev => { const datos = { ...prev }; delete datos[tipo]; return datos; });
-    setResultado(null); setPropuesta(null); setError(''); setErroresArchivo(prev => { const siguiente = { ...prev }; delete siguiente[tipo]; return siguiente; }); setDetalleError('');
+    setResultado(null); setPropuestas({}); setError(''); setErroresArchivo(prev => { const siguiente = { ...prev }; delete siguiente[tipo]; return siguiente; }); setDetalleError('');
   }
   function limpiar() {
     operacionPropuesta.current++; cancelarPropuestas(); setCalculando(false);
     operacion.current++;
     setRevisionDatos({}); setValidado(false);
-    setEntradas({}); setResultado(null); setPropuesta(null); setNombres(nombresVacios); setArchivos({});
+    setEntradas({}); setResultado(null); setPropuestas({}); setNombres(nombresVacios); setArchivos({});
     setRevision(r => r + 1); setError(''); setErroresArchivo({}); setDetalleError(''); setCargando(false);
   }
   function analizar() {
@@ -83,7 +84,7 @@ export function useAppWorkflow() {
       const analisis = analizarCartola(revisionDatos.cartola, revisionDatos.catalogo, revisionDatos.acuerdos);
       const etiquetas = { ...nombres };
       for (const tipo of Object.keys(archivos) as TipoEntrada[]) etiquetas[tipo] = archivos[tipo]!.name;
-      setEntradas(revisionDatos); setNombres(etiquetas); setResultado(analisis); setPropuesta(null); setArchivos({}); setRevision(r => r + 1);
+      setEntradas(revisionDatos); setNombres(etiquetas); setResultado(analisis); setPropuestas({}); setArchivos({}); setRevision(r => r + 1);
       setVista('analisis');
     } catch (err) {
       const archivo = errorDeAnalisis(err);
@@ -95,11 +96,14 @@ export function useAppWorkflow() {
   async function generar(modalidad: 'costo' | 'meta') {
     if (calculando || !entradas.cartola || !entradas.catalogo || !entradas.acuerdos || !entradas.supuestos || (modalidad === 'meta' && !entradas.meta)) return;
     const id = ++operacionPropuesta.current;
-    setPropuesta(null); setError(''); setDetalleError(''); setCalculando(true); setVista('propuestas');
+    setPropuestas(prev => ({ ...prev, [modalidad]: undefined })); setError(''); setDetalleError(''); setCalculando(true); setVista(modalidad);
     try {
       const entrada = { cartola: entradas.cartola, catalogo: entradas.catalogo, acuerdos: entradas.acuerdos, supuestos: entradas.supuestos, ...(modalidad === 'meta' ? { meta: entradas.meta! } : {}) };
       const respuesta = await ejecutarPropuesta(id, modalidad, entrada);
-      if (operacionPropuesta.current === id && respuesta.revision === id) setPropuesta(respuesta.resultado);
+      if (operacionPropuesta.current === id && respuesta.revision === id) {
+        const nueva = respuesta.resultado;
+        setPropuestas(prev => nueva.modalidad === 'costo' ? { ...prev, costo: nueva } : { ...prev, meta: nueva });
+      }
     } catch (err) {
       if (operacionPropuesta.current !== id || (err instanceof DOMException && err.name === 'AbortError')) return;
       const archivo = errorDeAnalisis(err);

@@ -17,7 +17,7 @@ const siNo = (valor: boolean) => valor ? 'Sí' : 'No';
 const nombreProducto = (id: string | null, catalogo?: Catalogo) => {
   if (id === null) return 'Sin identificar';
   const producto = catalogo?.productos.find(p => p.id === id);
-  return producto ? `${producto.nombre} · ${id}` : id;
+  return producto ? `${producto.nombre}\nIdentificador: ${id}` : id;
 };
 const nombreEmisor = (id: string, catalogo?: Catalogo) => catalogo?.emisores.find(e => e.id === id)?.nombre ?? id;
 
@@ -55,11 +55,11 @@ function ContenidoArchivo({ activa, datos }: Readonly<{ activa: TipoEntrada; dat
 export function SupuestosReview({ supuestos: s }: Readonly<{ supuestos: Supuestos }>) {
   return <><Ficha campos={[
     ['Versión de supuestos', s.version ?? 'No informada'], ['Fuente de supuestos', s.fuente ?? 'No informada'], ['Fecha de supuestos', s.fecha ?? 'No informada'], ['Valor UF de referencia', montoEntrada(s.uf.valor_clp)], ['Fecha UF', fecha(s.uf.fecha)],
-  ]} /><Tabla titulo="Categorías · supuesto" columnas={['Categoría', 'Retorno real bruto · supuesto', 'Volatilidad · supuesto', 'Factor crecimiento']} filas={Object.entries(s.categorias).map(([cat, v]) => [cat, tasaEntrada(v.retorno_real_bruto_pct), tasaEntrada(v.volatilidad_pct), cantidad(v.peso_crecimiento)])} />
+  ]} /><Tabla titulo="Categorías (supuesto)" columnas={['Categoría', 'Retorno real bruto (supuesto)', 'Volatilidad (supuesto)', 'Factor crecimiento']} filas={Object.entries(s.categorias).map(([cat, v]) => [cat, tasaEntrada(v.retorno_real_bruto_pct), tasaEntrada(v.volatilidad_pct), cantidad(v.peso_crecimiento)])} />
     <Tabla titulo="Tramos" columnas={['Tramo', 'Desde meses (incluido)', 'Hasta meses (excluido)', 'Categorías en orden']} filas={s.tramos.map(t => [t.id, cantidad(t.desde_meses), t.hasta_meses === null ? 'Sin límite superior' : cantidad(t.hasta_meses), t.categorias.join(', ')])} />
     <Tabla titulo="Perfiles" columnas={['Perfil', 'Máximo crecimiento']} filas={Object.entries(s.perfiles).map(([id, p]) => [id, tasaEntrada(p.max_crecimiento_pct)])} />
     <Ficha campos={[[ 'Máximo por fondo', tasaEntrada(s.limites.max_por_fondo_pct) ], ['Máximo por AGF', tasaEntrada(s.limites.max_por_agf_pct)]]} />
-    <Tabla titulo="Escenarios · supuesto" columnas={['Escenario', 'Ajuste bruto · pp']} filas={s.escenarios.map(e => [e.id, cantidad(e.ajuste_retorno_pp)])} />
+    <Tabla titulo="Escenarios (supuesto)" columnas={['Escenario', 'Ajuste bruto (pp)']} filas={s.escenarios.map(e => [e.id, cantidad(e.ajuste_retorno_pp)])} />
   </>;
 }
 export function MetaReview({ meta: m }: Readonly<{ meta: Meta }>) {
@@ -82,7 +82,7 @@ function camposRecibidos(valor: unknown, ruta: string): string[][] {
   else if (typeof valor === 'boolean') texto = siNo(valor);
   else if (typeof valor === 'number') texto = cantidad(valor);
   else if (valor === '') texto = 'Texto vacío';
-  return [[/retorno|volatilidad/.test(ruta) ? `${ruta} · supuesto` : ruta, texto]];
+  return [[/retorno|volatilidad/.test(ruta) ? `${ruta} (supuesto)` : ruta, texto]];
 }
 
 function Adicionales({ titulo, datos, conocidos }: Readonly<{ titulo: string; datos: object; conocidos: string[] }>) {
@@ -121,7 +121,7 @@ export function CartolaReview({ cartola, catalogo }: Readonly<{ cartola: Cartola
       ['Total en cartola', clp(sumar(cartola.posiciones.map(p => String(p.monto_clp))).toString())],
     ]} />
     <Adicionales titulo="Otros datos del cliente" datos={cartola.cliente} conocidos={['referencia', 'perfil_riesgo', 'perfil_evaluado_el', 'plan_apv']} />
-    <Tabla titulo="Posiciones de la cartola" columnas={['Fila', 'Producto / identificación', 'Descripción original', 'Serie', 'Cuotas', 'Valor cuota · CLP', 'Monto declarado · CLP']} filas={cartola.posiciones.map((p, indice) => [
+    <Tabla titulo="Posiciones de la cartola" columnas={['Fila', 'Producto / identificación', 'Descripción original', 'Serie', 'Cuotas', 'Valor cuota (CLP)', 'Monto declarado (CLP)']} filas={cartola.posiciones.map((p, indice) => [
       String(indice + 1), nombreProducto(p.producto, catalogo), p.descripcion_original ?? 'No informada',
       p.serie ?? 'Sin serie', cantidad(p.cuotas), cantidad(p.valor_cuota), montoEntrada(p.monto_clp),
     ])} />
@@ -144,12 +144,12 @@ export function CatalogoReview({ catalogo }: Readonly<{ catalogo: Catalogo }>) {
     {catalogo.productos.length > 10 && <label className="ts-search ts-review-search">Buscar producto o emisor<input type="search" value={busqueda} onChange={e => setBusqueda(e.target.value)} /></label>}
     <p className="ts-review-count">{productos.length} productos</p>
     {productos.map((p, indice) => <details className="ts-review-item" key={`${p.id}-${indice}`}>
-      <summary><span><strong>{p.nombre}</strong><small>{nombreEmisor(p.emisor, catalogo)} · {p.id}</small></span><span>{p.series.length} series</span></summary>
+      <summary><span><strong>{p.nombre}</strong><small>{nombreEmisor(p.emisor, catalogo)}</small><small>Identificador: {p.id}</small></span><span>{p.series.length} series</span></summary>
       <Ficha campos={[
-        ['Emisor', `${nombreEmisor(p.emisor, catalogo)} · ${p.emisor}`], ['Tipo', `${tiposProducto[p.tipo]} · ${p.tipo}`], ['Categoría', p.categoria], ['Liquidez', `${cantidad(p.liquidez_dias)} días`],
+        ['Emisor', nombreEmisor(p.emisor, catalogo)], ['Identificador del emisor', p.emisor], ['Tipo', tiposProducto[p.tipo]], ['Código de tipo', p.tipo], ['Categoría', p.categoria], ['Liquidez', `${cantidad(p.liquidez_dias)} días`],
         ...(p.tac_pct === undefined ? [] : [['TAC del producto', tasaEntrada(p.tac_pct)] as [string, ReactNode]]),
       ]} />
-      {p.series.length ? <Tabla titulo={`Series de ${p.nombre}`} columnas={['Serie', 'TAC anual', 'Mínimo · CLP', 'Abierta', 'Solo APV', 'Requiere mandato']} filas={p.series.map(s => [s.codigo, tasaEntrada(s.tac_pct), montoEntrada(s.minimo_clp), siNo(s.abierta), siNo(s.solo_apv), siNo(s.requiere_mandato)])} /> : <p className="ts-footnote">Producto sin series.</p>}
+      {p.series.length ? <Tabla titulo={`Series de ${p.nombre}`} columnas={['Serie', 'TAC anual', 'Mínimo (CLP)', 'Abierta', 'Solo APV', 'Requiere mandato']} filas={p.series.map(s => [s.codigo, tasaEntrada(s.tac_pct), montoEntrada(s.minimo_clp), siNo(s.abierta), siNo(s.solo_apv), siNo(s.requiere_mandato)])} /> : <p className="ts-footnote">Producto sin series.</p>}
       {p.series.map(s => <Adicionales key={s.codigo} titulo={`Otros campos de la serie ${s.codigo}`} datos={s} conocidos={['codigo', 'tac_pct', 'minimo_clp', 'abierta', 'solo_apv', 'requiere_mandato']} />)}
       <Adicionales titulo={`Otros datos de ${p.nombre}`} datos={p} conocidos={['id', 'nombre', 'emisor', 'tipo', 'categoria', 'liquidez_dias', 'tac_pct', 'series']} />
     </details>)}

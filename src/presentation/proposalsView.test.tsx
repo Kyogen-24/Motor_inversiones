@@ -13,6 +13,20 @@ describe('acciones para generar propuestas', () => {
   const datos = cargarEjemplo();
   const resultado = analizarCartola(datos.cartola, datos.catalogo, datos.acuerdos);
   const acciones = { generarCosto() {}, generarMeta() {} };
+  it('separa los controles y requisitos de cada vista de nivel 2', () => {
+    const sinMeta = { cartola: datos.cartola, catalogo: datos.catalogo, acuerdos: datos.acuerdos, supuestos: datos.supuestos };
+    const workflow = { ...acciones, resultado, entradas: sinMeta, calculando: false };
+    const costo = renderToStaticMarkup(<AccionesPropuestas workflow={workflow} modalidad="costo" />);
+    expect(costo).toContain('Generar mejora de costo');
+    expect(costo).not.toContain('Armar propuesta para la meta');
+    expect(costo).not.toContain('Agrega la meta');
+    expect(costo).not.toContain('disabled=""');
+    const meta = renderToStaticMarkup(<AccionesPropuestas workflow={workflow} modalidad="meta" />);
+    expect(meta).not.toContain('Generar mejora de costo');
+    expect(meta).toContain('Armar propuesta para la meta');
+    expect(meta).toContain('Agrega la meta');
+    expect(meta).toContain('disabled=""');
+  });
   it('mantiene ambos botones visibles y deshabilitados sin un análisis', () => {
     const html = renderToStaticMarkup(<AccionesPropuestas workflow={{ ...acciones, resultado: null, entradas: {}, calculando: false }} />);
     expect(html).toContain('Generar mejora de costo');
@@ -49,7 +63,7 @@ describe('evidencia visible de nivel 2', () => {
     expect(html).not.toContain('Optimalidad');
     expect(html).not.toContain('no son historia ni promesa');
     expect(html).toContain('Revisar liquidez antes del próximo desembolso.');
-    expect(html).toContain('Retorno bruto · supuesto');
+    expect(html).toContain('Retorno bruto (supuesto)');
     expect(html).toContain('Costo acumulado');
   }, 10_000);
   it('revisa los supuestos sin convertir anotaciones del archivo en avisos del análisis', () => {
@@ -57,16 +71,16 @@ describe('evidencia visible de nivel 2', () => {
     s._aviso = 'Aviso de datos ficticios de prueba';
     const html = renderToStaticMarkup(<SupuestosReview supuestos={s} />);
     expect(html).not.toContain(s._aviso);
-    expect(html).toContain('Retorno real bruto · supuesto');
+    expect(html).toContain('Retorno real bruto (supuesto)');
   });
   it('presenta supuestos y meta con campos legibles y retornos rotulados', () => {
     const d = cargarEjemplo();
     const html = renderToStaticMarkup(<><SupuestosReview supuestos={d.supuestos} /><MetaReview meta={d.meta} /></>);
-    for (const texto of ['Retorno real bruto · supuesto', 'Volatilidad · supuesto', 'Capital asignado', 'Fecha de referencia', 'Desembolsos', 'Tramos']) expect(html).toContain(texto);
+    for (const texto of ['Retorno real bruto (supuesto)', 'Volatilidad (supuesto)', 'Capital asignado', 'Fecha de referencia', 'Desembolsos', 'Tramos']) expect(html).toContain(texto);
   });
   it('expone universo, acceso y comparativo completo de costo', () => {
     const html = renderToStaticMarkup(<ProposalView propuesta={proponerCostos(cargarEjemplo())} />);
-    for (const texto of ['Distribuidor de ejemplo', 'alternativas de menor costo fuera de ese universo', 'Una persona revisa', 'Retorno bruto · supuesto', 'Crecimiento', 'Concentración', 'Ticket', 'Origen', 'TAC', 'Fuentes y metodología', '2,13 %', 'Tenencias conservadas']) expect(html).toContain(texto);
+    for (const texto of ['Distribuidor de ejemplo', 'alternativas de menor costo fuera de ese universo', 'Una persona revisa', 'Retorno bruto (supuesto)', 'Crecimiento', 'Concentración', 'Ticket', 'Origen', 'TAC', 'Fuentes y metodología', '2,13 %', 'Tenencias conservadas']) expect(html).toContain(texto);
     expect(html).not.toContain('deuda_uf_mediano');
     expect(html).not.toContain('retencion');
     expect(html).not.toContain('Destinos por lote original');
@@ -87,7 +101,7 @@ describe('evidencia visible de nivel 2', () => {
     expect(html).not.toContain('Restricciones respetadas');
     expect(html).not.toContain('Máximo reducido');
     expect(html.indexOf('Pagos pendientes')).toBeLessThan(html.indexOf('Perfil y crecimiento'));
-    expect(html.indexOf('Escenarios · supuesto')).toBeLessThan(html.indexOf('Instrumentos por tramo'));
+    expect(html.indexOf('Escenarios (supuesto)')).toBeLessThan(html.indexOf('Instrumentos por tramo'));
     expect(html).toContain('un excedente de VP puede coexistir con pagos pendientes');
     expect(html).toContain('126,2110 UF');
     expect(html).toContain('Primer pago con faltante');

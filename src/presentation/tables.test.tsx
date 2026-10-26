@@ -83,8 +83,8 @@ describe('tablas del análisis de nivel 1', () => {
     expect(tablaCondicional).toContain('<td>B<small>TAC 1,45 %</small></td>');
     expect(html).not.toContain('$4.565.000');
     expect(html).not.toContain('Los ahorros condicionales no se suman');
-    expect(html).toContain('TAC de estas posiciones · Base computable: $210.000.000.');
-    expect(html).toContain('TAC de estas posiciones · Base computable: $105.000.000.');
+    expect(html).toContain('TAC de estas posiciones. Base computable: $210.000.000.');
+    expect(html).toContain('TAC de estas posiciones. Base computable: $105.000.000.');
     const resumen = html.slice(html.indexOf('ts-result-summary'), html.indexOf('</section>', html.indexOf('ts-result-summary')));
     expect(resumen).toContain('$300.000 + $315.000');
     expect(resumen).toContain('$2.265.000');
