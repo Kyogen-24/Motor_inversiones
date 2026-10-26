@@ -39,7 +39,7 @@ En meta, el VP usa el promedio simple de categorías efectivas, días reales / 3
 
 Los tres escenarios son **supuestos**: adverso −1,5 pp, base 0 y favorable +1,5 pp al retorno bruto. Se capitaliza a retorno neto de TAC hasta liquidación; el costo mensual por saldo medio es informativo y no se cobra dos veces. Solo se declara «alcanza» si todos los pagos se cubren en base neta. El pendiente futuro no es el capital adicional necesario hoy. Consulta [la aceptación de nivel 2](specs/002-propuestas-costo-meta/quickstart.md).
 
-Comprueba primero las cifras de referencia. Después usa los conjuntos de [data/pruebas](data/pruebas/README.md) o modifica los JSON y vuelve a cargarlos. Los cuatro escenarios de APV, mandato, acuerdos vencidos y ausencia de ahorro, y los cuatro archivos inválidos, se comprobaron en la interfaz local el 2026-10-24.
+Usa los conjuntos de [data/pruebas](data/pruebas/README.md) o modifica los JSON y vuelve a cargarlos. Los cuatro escenarios de APV, mandato, acuerdos vencidos y ausencia de ahorro, y los cuatro archivos inválidos, se comprobaron en la interfaz local el 2026-10-24.
 
 La previsualización conserva descripciones originales, decimales y campos adicionales de los tres archivos. Abre cada producto o acuerdo para revisar sus series y datos; las tablas muestran hasta 50 registros por página, con búsqueda para conjuntos grandes. Los campos adicionales anidados se muestran con su ruta. Las banderas omitidas de serie se presentan con los valores normalizados documentados. En el análisis, Posiciones separa el diagnóstico de costos y la comparación de series; Acceso y series conserva reglas, motivos, evidencia y tareas condicionales.
 
@@ -87,33 +87,13 @@ El ahorro condicional es adicional respecto del escenario elegible. Se muestra l
 
 Las comisiones se conservan en el contexto del análisis y se ocultan en la vista del cliente. Nunca participan en decisiones ni se suman como costo. No hay un selector de comisiones porque esta entrega no incluye una vista comercial.
 
-## Cifras de referencia
-
-Cartola: 235.000.000 CLP. Computable: 230.000.000. Sin identificar: 5.000.000 (2,13 %). Costo actual: 5.180.000/año; TAC 2,2522 %. Ahorro elegible: 1.650.000/año. Costo posterior: 3.530.000; TAC 1,5348 %. Condicional adicional: 615.000/año.
-
-Estas cifras son criterios de aceptación; no están codificadas en el motor.
-
 ## Pruebas
 
 `npm test` ejecuta las pruebas de Vitest del motor, casos de uso, importación, Worker y presentación. `npm run test:watch` mantiene las pruebas en observación. Cubren cifras de aceptación, acceso, concentración, mínimos, perfil, VP, escenarios, pagos, precisión, determinismo, cancelación y errores de entrada.
 
-Las pruebas de motor e importación usan los JSON de referencia y sus variaciones. Las de presentación renderizan React de forma estática y no necesitan un servidor. Las revisiones visuales e interactivas se documentan en `docs/construccion.md`. Pages ejecuta las pruebas y la compilación antes de subir el sitio.
+Las pruebas de motor e importación usan los JSON de referencia y sus variaciones. Las de presentación renderizan React de forma estática y no necesitan un servidor. Las revisiones visuales e interactivas se documentan en `docs/construccion.md`.
 
 `src/presentation/tables.test.tsx` verifica además el HTML generado por las tablas: contenido completo y precisión de la previsualización, datos adicionales de seguros, diagnóstico, totales, exclusiones y ahorro condicional. No requiere un navegador para ejecutarse.
-
-## Publicación en GitHub Pages
-
-Se incluye un flujo de GitHub Actions para publicar exclusivamente `dist/` al habilitar Pages con origen GitHub Actions. La ruta base se obtiene del nombre del repositorio y funciona también con repositorios `usuario.github.io`. Para una ruta distinta:
-
-```bash
-VITE_BASE_PATH=/nombre-repositorio/ npm run build
-```
-
-La publicación en un repositorio público propio y en GitHub Pages sigue pendiente. Las direcciones se añadirán cuando se configure esa entrega.
-
-El despliegue es manual: **Actions → Publicar sitio en Pages → Run workflow → main**. Subir a `main` no publica automáticamente. El flujo instala dependencias, ejecuta pruebas, comprueba tipos, compila y publica solo `dist/`. Utiliza Node 24, acciones con runtime Node 24 y Ubuntu 24.04.
-
-El repositorio privado conserva los originales HTML/MD y anexos internos como referencia; no se incluyen en el sitio. Antes de hacer público el repositorio se debe preparar una copia sin esos documentos. Las credenciales, compilación, dependencias instaladas, capturas y archivos generados están excluidos por `.gitignore`. En `data/` se versionan únicamente los ejemplos originales y `data/pruebas/`; no añadir archivos reales de clientes.
 
 ## Límites funcionales
 
