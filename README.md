@@ -66,7 +66,6 @@ Presentación conecta infraestructura con aplicación. Aplicación depende del d
 - Zod valida la estructura antes del análisis; el dominio comprueba relaciones e invariantes.
 - decimal.js conserva precisión decimal. Las tasas son porcentajes, no fracciones.
 - Lucide aporta iconos coherentes con etiquetas accesibles. Inter se sirve desde el propio sitio mediante Fontsource.
-- Los controles nativos resuelven las interacciones actuales; shadcn/ui queda disponible para una necesidad concreta. CSV y Papa Parse se posponen.
 
 Referencias oficiales: [Vite](https://vite.dev/guide/), [integración Tailwind](https://tailwindcss.com/docs/installation/using-vite), [Zod](https://zod.dev/api), [decimal.js](https://mikemcl.github.io/decimal.js/).
 
