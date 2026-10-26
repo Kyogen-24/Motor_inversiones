@@ -30,3 +30,9 @@ data/*
 .agents/
 docs/superpowers/
 docs/correccion-nivel-2.md
+
+.archify/
+
+# Prototipo y enunciado originales: conservar solo en local.
+/test-motor-de-propuestas.html
+/test-motor-de-propuestas.md
