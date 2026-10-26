@@ -17,7 +17,7 @@ La aplicación contiene funcionalidades de otros niveles, pero el diagnóstico s
 | Lenguaje | TypeScript estricto, línea 7 según package.json; destino ES2022 |
 | Interfaz | React 19, Lucide, Fontsource Inter y estilos con Tailwind 4 |
 | Desarrollo | Vite 8 con plugins React y Tailwind |
-| Estructura JSON | JSON.parse y Zod 4 en infraestructura |
+| Importación | JSON.parse o adaptadores CSV, seguidos por Zod 4 en infraestructura |
 | Cálculo | decimal.js 10, constructor privado de 40 dígitos |
 | Pruebas | Vitest 5; tres archivos de regresión de nivel 1 dentro de src |
 | Entorno verificado | Node v26.11.1 durante esta revisión; workflow configurado con Node 24 |
@@ -66,7 +66,7 @@ Otros archivos presentes en esas carpetas pertenecen a otros alcances y no se el
 
 Presentación solicita lectura/validación a infraestructura e invoca analizarCartola con los tres objetos. Aplicación utiliza dominio; los módulos financieros no importan React ni Zod.
 
-Flujo: seleccionar archivo → leer texto → JSON.parse → validar estructura → verificar relaciones → analizar posiciones → calcular totales → presentar resultado.
+Flujo: seleccionar archivo → leer texto → interpretar JSON o CSV → validar estructura → verificar relaciones → analizar posiciones → calcular totales → presentar resultado.
 
 AnalizarCartola es síncrona y devuelve Analisis o lanza Error. No hay resultado ok/error ni confirmaciones persistidas. La importación no genera objetos profundamente congelados; el caso de uso no los modifica y clona el contexto de salida.
 

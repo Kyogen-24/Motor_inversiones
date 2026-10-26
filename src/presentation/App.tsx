@@ -5,6 +5,7 @@ import AnalysisView from './AnalysisView';
 import ProposalView from './ProposalView';
 import GoalView from './GoalView';
 import DataPanel from './DataPanel';
+import ClientContext from './ClientContext';
 import Navigation, { type Vista } from './Navigation';
 import { useAppWorkflow } from './useAppWorkflow';
 import type { TipoEntrada } from '../infrastructure/input';
@@ -38,8 +39,9 @@ function AppLayout(workflow: Workflow) {
       <header className="ts-topbar"><div className="ts-breadcrumb"><button ref={disparadorMenu} className="ts-icon-button ts-mobile-toggle" aria-label="Abrir navegación" aria-expanded={menuAbierto} onClick={() => setMenuAbierto(true)}><PanelLeftClose size={18} /></button><Layers3 size={15} aria-hidden="true" /><span>Espacio de trabajo</span><ChevronRight size={13} aria-hidden="true" /><strong>{titulosVista[vista]}</strong></div></header>
       <main id="contenido" className="ts-main" tabIndex={-1}>
         <PageHeading vista={vista} resultado={resultado} titulo={titulo} alActualizar={() => navegar('datos')} />
+        <ClientContext cartola={resultado?.contexto.cartola ?? workflow.revisionDatos.cartola} vista={vista} analizado={Boolean(resultado)} propuestaCalculada={Boolean(workflow.propuesta)} modalidadCalculando={workflow.modalidadCalculando} validado={workflow.validado} cargando={workflow.cargando} error={Boolean(workflow.error)} tieneSupuestos={Boolean(workflow.entradas.supuestos)} tieneMeta={Boolean(workflow.entradas.meta)} />
         {vista !== 'datos' && workflow.error && <div className="ts-error" role="alert"><strong>No se pudo generar la propuesta</strong><p>{workflow.error}</p><button className="ts-button" onClick={() => navegar('datos')}>Revisar archivos de entrada</button><details><summary>Información para soporte</summary><p>{workflow.detalleError}</p></details></div>}
-        {workflow.calculando && <p role="status">Calculando propuesta… Puedes seguir navegando.</p>}
+        {workflow.calculando && <p role="status">{workflow.modalidadCalculando === 'costo' ? 'Calculando mejora de costos…' : 'Calculando planificación de meta…'} Puedes seguir navegando.</p>}
         <ContenidoPrincipal workflow={workflow} />
       </main>
     </div>
@@ -48,7 +50,7 @@ function AppLayout(workflow: Workflow) {
 
 function PageHeading({ vista, resultado, titulo, alActualizar }: Readonly<{ vista: Vista; resultado: Workflow['resultado']; titulo: RefObject<HTMLHeadingElement | null>; alActualizar: () => void }>) {
   return <div className="ts-page-heading"><div><h1 ref={titulo} tabIndex={-1}>{titulosVista[vista]}</h1><p>{descripcionesVista[vista]}</p></div>
-    {vista === 'analisis' && resultado && <button className="ts-button ts-button--primary" onClick={alActualizar}><Upload size={15} aria-hidden="true" />Actualizar archivos</button>}
+    {['analisis', 'costo', 'meta'].includes(vista) && resultado && <button className="ts-button ts-button--primary" onClick={alActualizar}><Upload size={15} aria-hidden="true" />Actualizar archivos</button>}
   </div>;
 }
 
@@ -65,25 +67,24 @@ function PanelDatos({ workflow }: Readonly<{ workflow: Workflow }>) {
   const actualizarDatos = Object.values(workflow.nombres).some(Boolean);
   return <>
     {(workflow.error || tiposConError.length > 0) && <div className="ts-error" role="alert"><strong>Revisa los archivos indicados</strong>{workflow.error && <p>{workflow.error}</p>}{tiposConError.length > 0 && <ul>{tiposConError.map(tipo => <li key={tipo}><a href={`#archivo-${tipo}`}>{etiquetas[tipo]}: revisar los datos señalados.</a></li>)}</ul>}{workflow.detalleError && <details><summary>Información para soporte</summary><p>{workflow.detalleError}</p></details>}</div>}
-    <DataPanel datos={workflow.revisionDatos} validado={workflow.validado} actualizando={actualizarDatos} erroresArchivo={workflow.erroresArchivo} nombres={workflow.nombres} archivos={workflow.archivos} alSeleccionar={workflow.seleccionar} alAnalizar={workflow.analizar} alLimpiar={workflow.limpiar} cargando={workflow.cargando} revision={workflow.revision} listo={workflow.validado} />
+    <DataPanel datos={workflow.revisionDatos} validado={workflow.validado} actualizando={actualizarDatos} erroresArchivo={workflow.erroresArchivo} nombres={workflow.nombres} archivos={workflow.archivos} alSeleccionar={workflow.seleccionar} alAnalizar={workflow.analizar} alLimpiar={workflow.limpiar} cargando={workflow.cargando} revision={workflow.revision} listo={workflow.validado && !workflow.calculando} />
   </>;
 }
 
 function VistaAnalisis({ workflow }: Readonly<{ workflow: Workflow }>) {
-  return <><AnalysisView resultado={workflow.resultado!} /><AccionesPropuestas workflow={workflow} /></>;
+  return <AnalysisView resultado={workflow.resultado!} />;
 }
 
-export function AccionesPropuestas({ workflow, modalidad }: Readonly<{ workflow: Pick<Workflow, 'resultado' | 'entradas' | 'calculando' | 'generarCosto' | 'generarMeta'>; modalidad?: 'costo' | 'meta' }>) {
-  const disponible = Boolean(workflow.resultado && workflow.entradas.supuestos);
-  return <div>
-    <div className="ts-input-actions">{modalidad !== 'meta' && <button className="ts-button ts-button--primary" disabled={!disponible || workflow.calculando} onClick={workflow.generarCosto}>Generar mejora de costo</button>}{modalidad !== 'costo' && <button className={`ts-button${modalidad === 'meta' ? ' ts-button--primary' : ''}`} disabled={!disponible || !workflow.entradas.meta || workflow.calculando} onClick={workflow.generarMeta}>Armar propuesta para la meta</button>}</div>
-    {!workflow.resultado ? <p className="ts-muted">Carga los archivos de entrada y analiza la cartola para generar propuestas.</p> : !workflow.entradas.supuestos ? <p className="ts-muted">Agrega los supuestos y vuelve a analizar la cartola para generar propuestas.</p> : modalidad !== 'costo' && !workflow.entradas.meta && <p className="ts-muted">Agrega la meta y vuelve a analizar la cartola para evaluar sus pagos.</p>}
-  </div>;
+export function EstadoPropuestas({ workflow, modalidad }: Readonly<{ workflow: Pick<Workflow, 'resultado' | 'entradas'>; modalidad: 'costo' | 'meta' }>) {
+  if (!workflow.resultado) return <p className="ts-muted">Carga los archivos de entrada y pulsa Analizar cartola.</p>;
+  if (!workflow.entradas.supuestos) return <p className="ts-muted">Agrega los supuestos y vuelve a analizar la cartola para calcular las propuestas.</p>;
+  if (modalidad === 'meta' && !workflow.entradas.meta) return <p className="ts-muted">Agrega la meta y vuelve a analizar la cartola para evaluar sus pagos.</p>;
+  return null;
 }
 
 function VistaPropuestas({ workflow }: Readonly<{ workflow: Workflow }>) {
   const { propuesta } = workflow;
-  return <><AccionesPropuestas workflow={workflow} modalidad={workflow.vista === 'costo' ? 'costo' : 'meta'} />{!workflow.resultado && <button className="ts-button" onClick={() => workflow.setVista('datos')}>Ir a archivos de entrada</button>}{propuesta && (propuesta.modalidad === 'costo' ? <ProposalView propuesta={propuesta} /> : <GoalView propuesta={propuesta} />)}</>;
+  return <>{!propuesta && <EstadoPropuestas workflow={workflow} modalidad={workflow.vista === 'costo' ? 'costo' : 'meta'} />}{!workflow.resultado && <button className="ts-button" onClick={() => workflow.setVista('datos')}>Ir a archivos de entrada</button>}{propuesta && (propuesta.modalidad === 'costo' ? <ProposalView propuesta={propuesta} /> : <GoalView propuesta={propuesta} />)}</>;
 }
 
 function Reglas() {

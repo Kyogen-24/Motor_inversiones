@@ -8,7 +8,7 @@ Las reglas y decisiones vigentes de propuestas de costo y meta pertenecen a [la 
 
 ## Entradas y diagnóstico
 
-La aplicación inicia vacía. Se seleccionan cartola, catálogo y acuerdos; el diagnóstico no necesita supuestos ni meta. Los archivos son JSON y se procesan localmente, sin cuentas, servidor de aplicación ni API financiera.
+La aplicación inicia vacía. Se seleccionan cartola, catálogo y acuerdos; el diagnóstico no necesita supuestos ni meta. Cartola, catálogo, acuerdos y las entradas de nivel 2 admiten JSON o CSV; se pueden combinar formatos. Los archivos se procesan localmente, sin cuentas, servidor de aplicación ni API financiera.
 
 Monto_clp es obligatorio y se conserva como base. Cuotas por valor cuota comprueba la valorización; una diferencia absoluta mayor de 1 CLP produce advertencia sin cambiar el monto.
 
@@ -30,7 +30,9 @@ Las comisiones se conservan en el contexto. Su valor no elige series, desempata 
 
 ## Precisión y contratos efectivos
 
-La lectura usa JSON.parse y Zod; lossless-json no forma parte del proyecto. No hay preservación de lexemas arbitrarios ni rechazo específico de claves JSON repetidas. Los límites de los números interpretados se aplican antes o durante la validación de negocio según el campo.
+La lectura JSON usa JSON.parse y Zod; lossless-json no forma parte del proyecto. En JSON no hay preservación de lexemas arbitrarios ni rechazo específico de claves repetidas. Los límites de los números interpretados se aplican antes o durante la validación de negocio según el campo.
+
+CSV se convierte al mismo modelo y pasa por el mismo esquema. Su cabecera, campos, nulos y límites están definidos en [el contrato CSV](specs/001-diagnostico-cambio-serie/contracts/input-csv.md). Se rechazan registros de distintos clientes o cortes y no se infieren separadores de miles. La cartola usa columnas por posición; catálogo, acuerdos, supuestos y meta usan las columnas ruta, tipo y valor para conservar listas y campos anidados, con padres explícitos y rutas únicas. La conversión numérica comprueba los dígitos significativos y la conservación del valor decimal antes de entregar un Number al modelo común.
 
 La configuración privada de decimal.js tiene 40 dígitos significativos y ROUND_HALF_UP. La salida financiera usa cadenas decimales. CLP se presenta al peso, TAC agregada a cuatro decimales y pesos a dos. No se decide elegibilidad con cifras redondeadas.
 

@@ -105,7 +105,7 @@ Se acepta cuando:
 
 ## Requisitos funcionales
 
-- **FR-001**: La aplicación permite seleccionar manualmente cartola, catálogo y acuerdos JSON. El diagnóstico no requiere supuestos ni una meta y no carga ejemplos automáticamente.
+- **FR-001**: La aplicación permite seleccionar manualmente cartola, catálogo y acuerdos en JSON o CSV, combinados libremente. El diagnóstico no requiere supuestos ni una meta y no carga ejemplos automáticamente.
 - **FR-002**: Se distinguen errores de lectura, sintaxis, estructura y coherencia. Se rechazan identificadores ambiguos y acuerdos duplicados por emisor. Un patrimonio posterior bien formado no invalida el archivo: su efecto se evalúa por alternativa en R04.
 - **FR-003**: El resultado conserva cliente, corte, versión y fuente del catálogo, corte de costos y contexto del distribuidor y acuerdos utilizados.
 - **FR-004 (R01)**: Se diagnostican las tenencias con costo reconocido aunque no sean contratables. Los destinos de cambio se limitan al universo habilitado y se declara que pueden existir alternativas fuera de él.
@@ -169,9 +169,11 @@ Cartola y posición conservan las tenencias originales. Catálogo identifica emi
 - **SC-006**: Los errores no dejan resultados inválidos como vigentes y el usuario puede corregir y volver a cargar.
 - **SC-007**: El recorrido completo se puede realizar en escritorio, móvil y teclado. La evidencia automatizada de HTML no acredita por sí sola revisión visual, contraste, zoom ni publicación.
 
+La cartola CSV representa una posición por registro y repite los datos del cliente y el corte sin diferencias entre filas. Catálogo y acuerdos admiten CSV de rutas tipadas para conservar su estructura anidada. Ambos formatos se convierten al modelo común antes de validar y analizar. El formato se detalla en [contracts/input-csv.md](contracts/input-csv.md).
+
 ## Convenciones y límites
 
-El nivel 1 identifica productos y series por coincidencia exacta. No interpreta PDF, CSV ni nombres aproximados; no calcula vencimiento de perfil, proyección, volatilidad ni metas. Cambiar fondo o AGF pertenece a otra modalidad y no se presenta como ahorro por serie.
+El nivel 1 identifica productos y series por coincidencia exacta. No interpreta PDF ni nombres aproximados; no calcula vencimiento de perfil, proyección, volatilidad ni metas. Cambiar fondo o AGF pertenece a otra modalidad y no se presenta como ahorro por serie.
 
 La precisión técnica y los límites efectivos están en [contracts/input-json.md](contracts/input-json.md) y [contracts/analysis.md](contracts/analysis.md). El límite del número JSON no debe confundirse con la precisión decimal del cálculo posterior. La ausencia de una fuente se declara; no se fabrica historia ni un costo faltante.
 

@@ -30,8 +30,7 @@ Las capacidades de niveles 2 y 3 se implementarán cuando se aborde su alcance.
 
 La aplicación funcionará en el navegador, sin backend, base de datos, cuentas ni llaves de API.
 Los datos de referencia se almacenan en archivos JSON locales del repositorio.
-La carga del nivel 1 será **JSON**. CSV y Papa Parse quedan pospuestos; alcanzar nivel 3 no
-requiere incorporar ese formato.
+Los cinco archivos admiten **JSON o CSV**. Infraestructura comparte el lector CSV y convierte las columnas de cartola o las rutas tipadas de los otros documentos al modelo común; después aplica el mismo esquema Zod y las mismas reglas. No se añade una dependencia para leer CSV.
 
 shadcn/ui aporta código de componentes que pasa a mantenerse dentro del proyecto.
 Su incorporación se decide según las pantallas necesarias; no se instala un catálogo completo
@@ -50,7 +49,7 @@ a presentación y conecta la entrada de datos con el caso de uso.
 ```mermaid
 flowchart TD
     P["Presentación y controlador de carga<br/>React · Tailwind · componentes seleccionados"]
-    I["Entrada de datos / infraestructura<br/>Lectura JSON · Zod · normalización"]
+    I["Entrada de datos / infraestructura<br/>Lectura JSON/CSV · Zod · normalización"]
     A["Aplicación<br/>Caso de uso puro: analizarCartola"]
     D["Dominio<br/>Modelos · reglas · cálculos · evidencia"]
 
@@ -119,7 +118,7 @@ repositorios genéricos, contenedores de inyección ni interfaces sin variación
 
 **Responsabilidad:** obtener, interpretar y normalizar los datos externos.
 
-- Lee archivos JSON seleccionados y permite cargar conjuntos de referencia para validación.
+- Lee archivos JSON o CSV seleccionados y permite cargar conjuntos de referencia para validación.
 - Distingue errores de lectura, sintaxis y estructura, conservando ruta o campo afectado.
 - Usa Zod para comprobar tipos, campos obligatorios, valores finitos y formatos admitidos.
 - Aplica los valores predeterminados documentados para campos opcionales de series.
@@ -179,7 +178,7 @@ técnico de la aplicación. Los motivos y códigos se conservan al presentar el 
 
 | Etapa | Capacidades | Separaciones aprovechadas |
 | --- | --- | --- |
-| Nivel 1, entrega actual | R01, R02, R04 y R05; diagnóstico y cambios de serie | Entrada JSON, caso de uso puro, reglas con evidencia y precisión común. |
+| Nivel 1, entrega actual | R01, R02, R04 y R05; diagnóstico y cambios de serie | Entradas JSON/CSV, caso de uso puro, reglas con evidencia y precisión común. |
 | Nivel 2, entrega posterior | R03, R06 y R07; metas, escenarios y propuestas entre fondos | Casos de uso y módulos de dominio para riesgo y proyección, con supuestos explícitos. |
 | Nivel 3, entrega posterior | R08 a R12; controles, motivos y documento reproducible | Controles con evidencia, instantánea completa y adaptadores de documento y huella. |
 
@@ -217,7 +216,7 @@ incluirse en la entrega; el enunciado y su marca no deben publicarse como parte 
 
 Los casos de uso de nivel 2 `proponerCostos` y `proponerMeta` validan entradas sin React/Zod. El dominio comparte `proposalValidation`, `proposalSearch`, `risk` y `projection`. La búsqueda conserva retención/lotes en costo y verifica tickets consolidados/soportes efectivos en meta; el contador tiene corte real de 50.000 nodos. Las trayectorias mensuales conservan evidencia de saldos y liquidaciones; no hay certificado de óptimo continuo.
 
-`proposalWorker.ts` crea un Worker local de módulo (`proposal.worker.ts`), transmite contratos serializables y termina cada operación al completar o cancelar. `useAppWorkflow` invalida revisiones anteriores, separa carga de cálculo y muestra errores en la vista activa. Las vistas formatean resultados del dominio. Los JSON continúan siendo manuales, sin persistencia ni envío a red.
+`proposalWorker.ts` crea un Worker local de módulo (`proposal.worker.ts`), transmite contratos serializables y termina cada operación al completar o cancelar. `useAppWorkflow` invalida revisiones anteriores, separa carga de cálculo y muestra errores en la vista activa. Las vistas formatean resultados del dominio. Los archivos continúan siendo manuales, sin persistencia ni envío a red.
 
 ## 8. Referencias técnicas
 

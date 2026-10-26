@@ -1,0 +1,34 @@
+ruta,tipo,valor
+,objeto,
+/_aviso,texto,Dato de ejemplo. Meta ficticia para la modalidad A.
+/tipo,texto,educacion
+/nombre,texto,Educación universitaria de dos hijos
+/referencia_cliente,texto,ACC-4471
+/capital_asignado_clp,numero,70000000
+/valor_uf_clp,numero,40000
+/fecha_referencia,texto,2026-09-30
+/desembolsos,lista,
+/desembolsos/0,objeto,
+/desembolsos/0/fecha,texto,2031-03-01
+/desembolsos/0/uf,numero,220
+/desembolsos/1,objeto,
+/desembolsos/1/fecha,texto,2032-03-01
+/desembolsos/1/uf,numero,220
+/desembolsos/2,objeto,
+/desembolsos/2/fecha,texto,2033-03-01
+/desembolsos/2/uf,numero,220
+/desembolsos/3,objeto,
+/desembolsos/3/fecha,texto,2034-03-01
+/desembolsos/3/uf,numero,440
+/desembolsos/4,objeto,
+/desembolsos/4/fecha,texto,2035-03-01
+/desembolsos/4/uf,numero,440
+/desembolsos/5,objeto,
+/desembolsos/5/fecha,texto,2036-03-01
+/desembolsos/5/uf,numero,220
+/desembolsos/6,objeto,
+/desembolsos/6/fecha,texto,2037-03-01
+/desembolsos/6/uf,numero,220
+/desembolsos/7,objeto,
+/desembolsos/7/fecha,texto,2038-03-01
+/desembolsos/7/uf,numero,220

@@ -167,10 +167,16 @@ N('p5',3,5,['Escenario','Resultado'],'Cobertura en UF','trayectoria: return','Sa
 
 const lanes=[['USUARIO /','INTERFAZ','UI'],['ENTRADA /','ADAPTADORES','IO'],['APLICACIÓN /','DOMINIO','MOT'],['RESULTADO /','EVIDENCIA','OUT']];
 const accessSub={a0:'Falla: out_of_scope',a1:'Cerrada: blocked',a2:'Sin APV: blocked',a3:'Sin mandato: conditional',a4:'Ticket / agregado al corte',a5:'Estado + regla + motivo'};
-for(const n of panels.find(p=>p.id==='acceso').nodes) n.sub=accessSub[n.id];
+const panelsById=new Map(panels.map(p=>[p.id,p]));
+const nodesByPanel=new Map(panels.map(p=>[p.id,new Map(p.nodes.map(n=>[n.id,n]))]));
+const accessPanel=panelsById.get('acceso');
+if(!accessPanel) throw new Error('Falta la lámina de acceso.');
+for(const n of accessPanel.nodes) n.sub=accessSub[n.id];
 // Evita que una salida secundaria atraviese otro nodo de su columna.
 for(const [panel,id,col] of [['mapa','m6',3],['nivel1','d5',3],['nivel1','d7',2],['costo','c6',2],['carga','i6',2]]) {
-  panels.find(p=>p.id===panel).nodes.find(n=>n.id===id).col=col;
+  const node=nodesByPanel.get(panel)?.get(id);
+  if(!node) throw new Error(`No existe el nodo ${id} en la lámina ${panel}.`);
+  node.col=col;
 }
 const focalEdges={mapa:['m4','m5','SOLICITUD'],carga:['i3','i4','ENTRADAS'],nivel1:['d0','d1','POSICIÓN'],acceso:['a3','a4','TICKET'],worker:['w1','w2','SOLICITUD'],costo:['c0','c1','LOTE'], 'meta-vp':['g0','g1','PAGOS'],'meta-asignacion':['h0','h1','RESERVA'],restricciones:['v0','v1','CARTERA'],proyeccion:['p0','p1','EVENTOS']};
 for(const p of panels) {
@@ -253,7 +259,8 @@ const goalExplanation={id:'entender-meta',title:'Nivel 2: cómo se calcula una m
   N('q4',2,4,['Restar costos','y efectuar pagos'],'Tres escenarios','Proyección','','',''),
   N('q5',3,5,['¿Alcanza?'],'Cobertura y pendientes','Conclusión','','',''),
 ],edges:[['q0','q1','accent','PAGOS'],['q1','q2'],['q2','q3'],['q3','q4'],['q4','q5']]};
-const money=x=>new Intl.NumberFormat('es-CL',{minimumFractionDigits:2,maximumFractionDigits:2}).format(x);
+const moneyFormatter=new Intl.NumberFormat('es-CL',{minimumFractionDigits:2,maximumFractionDigits:2});
+const money=x=>moneyFormatter.format(x);
 const sampleShort=300*.99, sampleLong=700*.99**5;
 const sampleMissing=1000-sampleShort-sampleLong, sampleCoverage=(sampleShort+sampleLong)/1000*100;
 const learningGuide=`

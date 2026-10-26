@@ -1,0 +1,8 @@
+referencia,perfil_riesgo,perfil_evaluado_el,plan_apv,corte,moneda,producto,serie,descripcion_original,cuotas,valor_cuota,monto_clp
+ACC-4471,moderado,2025-08-14,false,2026-09-30,CLP,alfa-deuda-uf,CLASI,,40000.0,1500.0,60000000
+ACC-4471,moderado,2025-08-14,false,2026-09-30,CLP,alfa-rv-global,CLASI,,30000.0,1500.0,45000000
+ACC-4471,moderado,2025-08-14,false,2026-09-30,CLP,beta-balanceado,CLASI,,25000.0,2000.0,50000000
+ACC-4471,moderado,2025-08-14,false,2026-09-30,CLP,beta-corto-clp,CLASI,,20000.0,1500.0,30000000
+ACC-4471,moderado,2025-08-14,false,2026-09-30,CLP,gamma-rv-chile,CLASI,,10000.0,2500.0,25000000
+ACC-4471,moderado,2025-08-14,false,2026-09-30,CLP,deposito-uf-90d,,,,,20000000
+ACC-4471,moderado,2025-08-14,false,2026-09-30,CLP,,,"FM Zeta Acciones Asia, serie A",,,5000000

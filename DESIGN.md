@@ -3,7 +3,7 @@
 
 **Theme:** light
 
-Aplicación de nivel 2 (2026-10-24): mantener etiquetas «supuesto» junto a retornos, volatilidad, VP y escenarios. Distinguir déficit VP, pendiente neto y capital no asignable mediante texto. Las tablas de asignaciones, acceso y trayectorias usan regiones con nombre accesible y foco de teclado; en móvil se desplazan dentro de su panel. El encabezado de costo depende del estado y admisibilidad, y no llama mejora a un ahorro cero. Detalles de evidencia y cartera actual de referencia son expandibles nativos.
+La conclusión aparece después de los resultados y antes del respaldo y las advertencias, en un panel destacado, tanto en cartola como en las dos propuestas. Mantener etiquetas «supuesto» junto a retornos, volatilidad, VP y escenarios, y distinguir déficit de VP, pagos pendientes y capital no asignable. Metas muestra un calendario con puntos separados proporcionalmente a sus fechas, importes y faltantes base. Tablas y calendario se desplazan dentro de regiones accesibles por teclado. Las fórmulas se consultan en «Cómo se calcula». Solo concentración y acceso conservan detalle expandible en propuestas. Un ahorro cero o una cartera no admisible nunca se presentan como mejora.
 
 Source measurements are normalized; roles and recommendations are interpreted. Font summary lists are independent, not paired by position. HTML examples are reconstructions, not source components.
 

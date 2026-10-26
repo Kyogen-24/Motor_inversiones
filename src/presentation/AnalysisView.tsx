@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { ArrowUpRight, Check, ChevronRight, Database, Info, Layers3 } from 'lucide-react';
+import { ArrowUpRight, ChevronRight, Database, Info, Layers3 } from 'lucide-react';
 import type { Analisis, ResultadoPosicion } from '../domain/model';
 import { decimal } from '../domain/numeric';
 import { porcentaje } from '../domain/numeric';
-import { clp, fecha, numero, pct } from './format';
+import { clp, numero, pct } from './format';
 import { Estado } from './PositionDetail';
 
 type Props = Readonly<{ resultado: Analisis }>;
@@ -14,14 +14,12 @@ export default function AnalysisView({ resultado }: Props) {
   const [pestana, setPestana] = useState<Pestana>('resumen');
   const [busqueda, setBusqueda] = useState('');
   const total = resultado.totales;
-  const contexto = resultado.contexto;
   const filtradas = resultado.posiciones.filter(p => `${p.nombre} ${p.emisor ?? ''} ${p.entrada.serie ?? ''}`.toLowerCase().includes(busqueda.toLowerCase()));
   function verSeries(_indice: number) {
     setPestana('acceso');
     requestAnimationFrame(() => document.getElementById('series-title')?.focus());
   }
   return <>
-          <section className="ts-client-strip" aria-label="Contexto del análisis"><div className="ts-client-id"><span className="ts-avatar">{contexto.cartola.cliente.referencia.slice(0, 2)}</span><div><strong>{contexto.cartola.cliente.referencia}</strong><span>Cliente</span></div></div><dl><div><dt>Fecha de corte</dt><dd>{fecha(contexto.cartola.corte)}</dd></div><div><dt>Perfil declarado</dt><dd className="ts-capitalize">{contexto.cartola.cliente.perfil_riesgo}</dd></div><div><dt>Plan APV</dt><dd>{contexto.cartola.cliente.plan_apv ? 'Sí' : 'No'}</dd></div></dl><span className="ts-analysis-ready"><Check size={13} aria-hidden="true" />Análisis calculado</span></section>
           <fieldset className="ts-tabs" aria-label="Secciones del análisis">
             {([{ id: 'resumen', label: 'Vista general' }, { id: 'posiciones', label: `Posiciones (${resultado.posiciones.length})` }, { id: 'acceso', label: 'Series' }] as const).map(tab => <button key={tab.id} aria-pressed={pestana === tab.id} className={pestana === tab.id ? 'is-active' : ''} onClick={() => setPestana(tab.id)}>{tab.label}</button>)}
           </fieldset>
@@ -37,7 +35,6 @@ export default function AnalysisView({ resultado }: Props) {
             {!filtradas.length && <p className="ts-empty-search">No hay posiciones que coincidan con «{busqueda}».</p>}
           </section>}
           {pestana === 'acceso' && <section className="ts-series-overview"><h2 id="series-title" tabIndex={-1}>Estado de cada serie por posición</h2><p className="ts-muted">El ticket es el monto de cada posición. La serie actual se identifica por separado.</p><TablaSeries posiciones={resultado.posiciones} /></section>}
-    <footer className="ts-analysis-footer"><details><summary>Contexto del análisis</summary><dl className="ts-review-meta"><div><dt>Catálogo</dt><dd>{contexto.catalogo.version}</dd></div><div><dt>Fuente de costos</dt><dd>{contexto.catalogo.fuente_costos}</dd></div><div><dt>Fecha de costos</dt><dd>{fecha(contexto.catalogo.corte_costos)}</dd></div></dl><p>Lectura: todo el catálogo. Propuesta: series habilitadas con acuerdo vigente, dentro del mismo fondo y AGF.</p><blockquote className="ts-universe-declaration">Esta propuesta considera productos de las administradoras con las que {contexto.acuerdos.distribuidor} mantiene acuerdos de distribución vigentes. Puede haber en el mercado alternativas de menor costo fuera de ese universo.</blockquote><p>Una persona revisa y decide.</p><p>AGF con acuerdo vigente: {resultado.acuerdosVigentes.length ? resultado.acuerdosVigentes.join(', ') : 'ninguna'}.</p><p>Perfil declarado el {fecha(contexto.cartola.cliente.perfil_evaluado_el)}.</p></details></footer>
   </>;
 }
 
@@ -65,7 +62,8 @@ function Resumen({ resultado, verSeries, verPosiciones }: PropsResumen) {
             </div>
             <section className="ts-holdings" aria-labelledby="posiciones-title"><div className="ts-section-heading"><h2 id="posiciones-title">Ahorro elegible</h2><button className="ts-text-button" onClick={verPosiciones}>Ver diagnóstico<ArrowUpRight size={15} aria-hidden="true" /></button></div><TablaPosiciones posiciones={resultado.posiciones} verSeries={verSeries} /></section>
             <AhorroCondicional posiciones={condicionales} total={total.condicional} verSeries={verSeries} />
-            <section className="ts-result-summary" aria-label="Resumen del ahorro">
+
+            <section className="ts-result-summary" aria-label="Resumen del ahorro"><h2>Conclusión del análisis</h2>
               <p>En total, el ahorro elegible es de <strong>{clp(total.ahorro)} al año</strong>{total.tac !== null && total.tacPosterior !== null && <>, y la TAC ponderada {decimal(total.ahorro).gt(0) ? 'baja' : 'se mantiene'} de <strong>{pct(total.tac, 4)}</strong> a <strong>{pct(total.tacPosterior, 4)}</strong></>}.</p>
               {hayCondicional && <p>El ahorro condicional adicional es de <strong>{clp(total.condicional)}</strong>{condicionales.length > 1 && <> ({condicionales.map(p => clp(p.condicional!.adicional)).join(' + ')})</>}, sujeto a las condiciones de la tabla. Si se cumplen y se reevalúa el acceso, el ahorro total podría subir a <strong>{clp(ahorroConCondiciones)} al año</strong>.</p>}
               {sinAcuerdo.map(p => <p key={p.indice}>La posición en <strong>{p.nombre}</strong> no tiene ahorro por serie: su AGF no tiene acuerdo vigente. Cambiar de AGF requiere una propuesta de cartera.</p>)}

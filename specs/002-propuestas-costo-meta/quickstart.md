@@ -88,6 +88,8 @@ El motor debe simular pagos y emitir conclusión neta base, cobertura y pendient
 
 ## 5. Navegador y entrega
 
-Revisar escritorio y móvil de 360 px; cargar/reemplazar archivos, generar modalidades, leer errores y recorrer con teclado. Verificar foco, regiones desplazables, encabezados y etiquetas «supuesto» al leer cada tabla. Reemplazar durante cálculo: worker viejo no sobrescribe nueva revisión. Limpiar/recargar vuelve a vacío. Revisar consola y registrar capturas de ambas modalidades.
+Revisar escritorio y móvil de 360 px; cargar/reemplazar archivos y pulsar **Analizar cartola** una sola vez. El diagnóstico aparece primero; con supuestos cargados se calcula después la mejora de costos y, si hay meta, su planificación. Verificar el cliente en las vistas, los totales de la comparación, los errores y el recorrido con teclado. Verificar foco, regiones desplazables, encabezados y etiquetas «supuesto» al leer cada tabla. Reemplazar durante cálculo: el worker anterior no sobrescribe la nueva revisión. Limpiar/recargar vuelve a vacío. Revisar consola y registrar capturas de ambas modalidades.
 
 Medir tiempos del caso de referencia y del entorno; el objetivo de ingeniería es <2 s en escritorio, sin garantía para otros equipos. Cancelación y navegación no deben bloquear la interfaz. Revisar el build en preview y publicar solo `dist/` cuando corresponda. Sincronizar README, SPEC y AGENTS con capacidades y pruebas efectivamente realizadas.
+
+Las cinco entradas pueden cargarse en JSON o CSV y combinar formatos. Las versiones CSV están en `data/`; cartola usa columnas por posición y los demás documentos usan rutas tipadas según [el contrato CSV](../001-diagnostico-cambio-serie/contracts/input-csv.md). Las reglas y las salidas del motor son las mismas.

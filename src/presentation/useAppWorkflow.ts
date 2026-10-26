@@ -27,7 +27,8 @@ export function useAppWorkflow() {
   const [menuAbierto, setMenuAbierto] = useState(false);
   const operacion = useRef(0);
   const operacionPropuesta = useRef(0);
-  const [calculando, setCalculando] = useState(false);
+  const [modalidadCalculando, setModalidadCalculando] = useState<'costo' | 'meta' | null>(null);
+  const calculando = modalidadCalculando !== null;
   useEffect(() => () => { operacionPropuesta.current++; cancelarPropuestas(); }, []);
 
   useEffect(() => {
@@ -63,7 +64,7 @@ export function useAppWorkflow() {
   }, [archivos, entradas]);
 
   function seleccionar(tipo: TipoEntrada, archivo: File) {
-    operacionPropuesta.current++; cancelarPropuestas(); setCalculando(false);
+    operacionPropuesta.current++; cancelarPropuestas(); setModalidadCalculando(null);
     operacion.current++;
     setArchivos(prev => ({ ...prev, [tipo]: archivo }));
     setValidado(false); setCargando(true);
@@ -71,14 +72,14 @@ export function useAppWorkflow() {
     setResultado(null); setPropuestas({}); setError(''); setErroresArchivo(prev => { const siguiente = { ...prev }; delete siguiente[tipo]; return siguiente; }); setDetalleError('');
   }
   function limpiar() {
-    operacionPropuesta.current++; cancelarPropuestas(); setCalculando(false);
+    operacionPropuesta.current++; cancelarPropuestas(); setModalidadCalculando(null);
     operacion.current++;
     setRevisionDatos({}); setValidado(false);
     setEntradas({}); setResultado(null); setPropuestas({}); setNombres(nombresVacios); setArchivos({});
     setRevision(r => r + 1); setError(''); setErroresArchivo({}); setDetalleError(''); setCargando(false);
   }
   function analizar() {
-    if (!validado || !revisionDatos.cartola || !revisionDatos.catalogo || !revisionDatos.acuerdos) return;
+    if (calculando || !validado || !revisionDatos.cartola || !revisionDatos.catalogo || !revisionDatos.acuerdos) return;
     setError(''); setDetalleError('');
     try {
       const analisis = analizarCartola(revisionDatos.cartola, revisionDatos.catalogo, revisionDatos.acuerdos);
@@ -86,6 +87,9 @@ export function useAppWorkflow() {
       for (const tipo of Object.keys(archivos) as TipoEntrada[]) etiquetas[tipo] = archivos[tipo]!.name;
       setEntradas(revisionDatos); setNombres(etiquetas); setResultado(analisis); setPropuestas({}); setArchivos({}); setRevision(r => r + 1);
       setVista('analisis');
+      const id = ++operacionPropuesta.current;
+      cancelarPropuestas();
+      void generarAutomaticamente(revisionDatos, id);
     } catch (err) {
       const archivo = errorDeAnalisis(err);
       if (archivo) { setValidado(false); setErroresArchivo({ [archivo.tipo]: archivo.message }); return; }
@@ -93,25 +97,29 @@ export function useAppWorkflow() {
       setDetalleError(err instanceof Error ? err.message : 'Error no identificado.');
     }
   }
-  async function generar(modalidad: 'costo' | 'meta') {
-    if (calculando || !entradas.cartola || !entradas.catalogo || !entradas.acuerdos || !entradas.supuestos || (modalidad === 'meta' && !entradas.meta)) return;
-    const id = ++operacionPropuesta.current;
-    setPropuestas(prev => ({ ...prev, [modalidad]: undefined })); setError(''); setDetalleError(''); setCalculando(true); setVista(modalidad);
+  async function generarAutomaticamente(datos: Partial<Entradas>, id: number) {
+    if (!datos.cartola || !datos.catalogo || !datos.acuerdos || !datos.supuestos) return;
+    const base = { cartola: datos.cartola, catalogo: datos.catalogo, acuerdos: datos.acuerdos, supuestos: datos.supuestos };
     try {
-      const entrada = { cartola: entradas.cartola, catalogo: entradas.catalogo, acuerdos: entradas.acuerdos, supuestos: entradas.supuestos, ...(modalidad === 'meta' ? { meta: entradas.meta! } : {}) };
-      const respuesta = await ejecutarPropuesta(id, modalidad, entrada);
-      if (operacionPropuesta.current === id && respuesta.revision === id) {
-        const nueva = respuesta.resultado;
-        setPropuestas(prev => nueva.modalidad === 'costo' ? { ...prev, costo: nueva } : { ...prev, meta: nueva });
+      for (const modalidad of ['costo', 'meta'] as const) {
+        if (operacionPropuesta.current !== id) return;
+        if (modalidad === 'meta' && !datos.meta) continue;
+        setModalidadCalculando(modalidad);
+        try {
+          const entrada = modalidad === 'meta' ? { ...base, meta: datos.meta! } : base;
+          const respuesta = await ejecutarPropuesta(id, modalidad, entrada);
+          if (operacionPropuesta.current !== id || respuesta.revision !== id) return;
+          const nueva = respuesta.resultado;
+          setPropuestas(prev => nueva.modalidad === 'costo' ? { ...prev, costo: nueva } : { ...prev, meta: nueva });
+        } catch (err) {
+          if (operacionPropuesta.current !== id || (err instanceof DOMException && err.name === 'AbortError')) return;
+          const archivo = errorDeAnalisis(err);
+          const mensaje = `${modalidad === 'costo' ? 'Mejora de costos' : 'Planificación de meta'}: ${archivo?.message ?? (err instanceof Error ? err.message : 'No se pudo completar el cálculo.')}`;
+          setError(prev => prev ? `${prev} ${mensaje}` : mensaje);
+          setDetalleError(prev => [prev, err instanceof Error ? err.message : 'Error no identificado.'].filter(Boolean).join('\n'));
+        }
       }
-    } catch (err) {
-      if (operacionPropuesta.current !== id || (err instanceof DOMException && err.name === 'AbortError')) return;
-      const archivo = errorDeAnalisis(err);
-      setError(archivo?.message ?? (err instanceof Error ? err.message : 'No se pudo generar la propuesta.'));
-      setDetalleError(err instanceof Error ? err.message : 'Error no identificado.');
-    } finally { if (operacionPropuesta.current === id) setCalculando(false); }
+    } finally { if (operacionPropuesta.current === id) setModalidadCalculando(null); }
   }
-  function generarCosto() { void generar('costo'); }
-  function generarMeta() { void generar('meta'); }
-  return { vista, setVista, resultado, propuesta, entradas, revisionDatos, validado, nombres, archivos, error, erroresArchivo, detalleError, cargando, calculando, revision, menuAbierto, setMenuAbierto, seleccionar, limpiar, analizar, generarCosto, generarMeta };
+  return { vista, setVista, resultado, propuesta, entradas, revisionDatos, validado, nombres, archivos, error, erroresArchivo, detalleError, cargando, calculando, modalidadCalculando, revision, menuAbierto, setMenuAbierto, seleccionar, limpiar, analizar };
 }

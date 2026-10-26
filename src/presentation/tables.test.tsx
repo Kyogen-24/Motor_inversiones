@@ -64,7 +64,7 @@ describe('tablas del análisis de nivel 1', () => {
   it('muestra el ahorro elegible y el adicional condicionado con bases coherentes', () => {
     const datos = cargarEjemplo();
     const html = renderToStaticMarkup(<AnalysisView resultado={analizarCartola(datos.cartola, datos.catalogo, datos.acuerdos)} />);
-    for (const texto of ['Costo actual', 'Ahorro elegible', 'Ahorro condicional adicional', 'Costo elegible', 'Costo con condiciones cumplidas', 'Ahorro total posible', 'Serie actual', 'Serie elegible', 'Serie condicional', 'Condición', 'Ahorro adicional CLP', '$1.650.000', '$615.000', '$300.000', '$315.000', '$3.530.000', '$2.915.000', '$2.265.000', '1,8143 %', '1,2674 %', '1,5348 %', '$230.000.000', 'Lectura: todo el catálogo.', 'Esta propuesta considera productos de las administradoras con las que Distribuidor de ejemplo mantiene acuerdos de distribución vigentes.', 'Una persona revisa y decide.']) expect(html).toContain(texto);
+    for (const texto of ['Costo actual', 'Ahorro elegible', 'Ahorro condicional adicional', 'Costo elegible', 'Costo con condiciones cumplidas', 'Ahorro total posible', 'Serie actual', 'Serie elegible', 'Serie condicional', 'Condición', 'Ahorro adicional CLP', '$1.650.000', '$615.000', '$300.000', '$315.000', '$3.530.000', '$2.915.000', '$2.265.000', '1,8143 %', '1,2674 %', '1,5348 %', '$230.000.000']) expect(html).toContain(texto);
     expect(html).toContain('El mínimo supera el ticket, pero el patrimonio agregado al corte lo alcanza. Requiere confirmación escrita de la AGF.');
     const tablaElegible = html.slice(html.indexOf('ts-comparison-table'), html.indexOf('</table>', html.indexOf('ts-comparison-table')));
     expect(tablaElegible).not.toContain('Condicional adicional');

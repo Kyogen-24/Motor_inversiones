@@ -77,3 +77,5 @@ La importación diferencia lectura, sintaxis y estructura. ErrorArchivo conserva
 ValidarNegocio comprueba unicidad de emisores, productos, series por producto y acuerdos por emisor; referencias internas; fechas y orden de vigencia; montos y costos necesarios. Una referencia rota dentro de catálogo o acuerdos es un error; un producto desconocido de la cartola es un resultado permitido.
 
 Un acuerdo vencido o una serie cerrada son datos válidos con consecuencias de acceso. La fecha posterior del patrimonio pertenece a esa evaluación, no a un rechazo semántico global.
+
+Todos los archivos admiten alternativamente [CSV](input-csv.md), convertido al mismo esquema antes de analizar. Este contrato describe la ruta de importación JSON.

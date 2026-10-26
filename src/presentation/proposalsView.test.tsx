@@ -5,46 +5,25 @@ import { proponerCostos } from '../application/proponerCostos';
 import { proponerMeta } from '../application/proponerMeta';
 import ProposalView, { Evidencia } from './ProposalView';
 import GoalView from './GoalView';
+import GoalTimeline from './GoalTimeline';
 import { MetaReview, SupuestosReview } from './InputReview';
-import { AccionesPropuestas } from './App';
+import { EstadoPropuestas } from './App';
 import { analizarCartola } from '../application/analizarCartola';
 
-describe('acciones para generar propuestas', () => {
+describe('requisitos del análisis automático', () => {
   const datos = cargarEjemplo();
   const resultado = analizarCartola(datos.cartola, datos.catalogo, datos.acuerdos);
-  const acciones = { generarCosto() {}, generarMeta() {} };
-  it('separa los controles y requisitos de cada vista de nivel 2', () => {
-    const sinMeta = { cartola: datos.cartola, catalogo: datos.catalogo, acuerdos: datos.acuerdos, supuestos: datos.supuestos };
-    const workflow = { ...acciones, resultado, entradas: sinMeta, calculando: false };
-    const costo = renderToStaticMarkup(<AccionesPropuestas workflow={workflow} modalidad="costo" />);
-    expect(costo).toContain('Generar mejora de costo');
-    expect(costo).not.toContain('Armar propuesta para la meta');
-    expect(costo).not.toContain('Agrega la meta');
-    expect(costo).not.toContain('disabled=""');
-    const meta = renderToStaticMarkup(<AccionesPropuestas workflow={workflow} modalidad="meta" />);
-    expect(meta).not.toContain('Generar mejora de costo');
-    expect(meta).toContain('Armar propuesta para la meta');
+  it('indica los archivos pendientes de cada modalidad sin botones de generación', () => {
+    const entradas = { supuestos: datos.supuestos };
+    const costo = renderToStaticMarkup(<EstadoPropuestas workflow={{ resultado, entradas }} modalidad="costo" />);
+    expect(costo).toBe('');
+    const meta = renderToStaticMarkup(<EstadoPropuestas workflow={{ resultado, entradas }} modalidad="meta" />);
     expect(meta).toContain('Agrega la meta');
-    expect(meta).toContain('disabled=""');
+    expect(meta).not.toContain('<button');
   });
-  it('mantiene ambos botones visibles y deshabilitados sin un análisis', () => {
-    const html = renderToStaticMarkup(<AccionesPropuestas workflow={{ ...acciones, resultado: null, entradas: {}, calculando: false }} />);
-    expect(html).toContain('Generar mejora de costo');
-    expect(html).toContain('Armar propuesta para la meta');
-    expect(html.match(/disabled=""/g)).toHaveLength(2);
-  });
-  it('habilita costo con supuestos y meta solo cuando está cargada', () => {
-    const sinMeta = { cartola: datos.cartola, catalogo: datos.catalogo, acuerdos: datos.acuerdos, supuestos: datos.supuestos };
-    const html = renderToStaticMarkup(<AccionesPropuestas workflow={{ ...acciones, resultado, entradas: sinMeta, calculando: false }} />);
-    expect(html.match(/disabled=""/g)).toHaveLength(1);
-    const completo = renderToStaticMarkup(<AccionesPropuestas workflow={{ ...acciones, resultado, entradas: datos, calculando: false }} />);
-    expect(completo).not.toContain('disabled=""');
-  });
-  it('bloquea ambos botones mientras se calcula o faltan supuestos', () => {
-    for (const estado of [{ entradas: datos, calculando: true }, { entradas: {}, calculando: false }]) {
-      const html = renderToStaticMarkup(<AccionesPropuestas workflow={{ ...acciones, resultado, ...estado }} />);
-      expect(html.match(/disabled=""/g)).toHaveLength(2);
-    }
+  it('dirige al análisis único y solicita supuestos cuando faltan', () => {
+    expect(renderToStaticMarkup(<EstadoPropuestas workflow={{ resultado: null, entradas: {} }} modalidad="costo" />)).toContain('pulsa Analizar cartola');
+    expect(renderToStaticMarkup(<EstadoPropuestas workflow={{ resultado, entradas: {} }} modalidad="costo" />)).toContain('Agrega los supuestos');
   });
 });
 
@@ -80,10 +59,18 @@ describe('evidencia visible de nivel 2', () => {
   });
   it('expone universo, acceso y comparativo completo de costo', () => {
     const html = renderToStaticMarkup(<ProposalView propuesta={proponerCostos(cargarEjemplo())} />);
-    for (const texto of ['Distribuidor de ejemplo', 'alternativas de menor costo fuera de ese universo', 'Una persona revisa', 'Retorno bruto (supuesto)', 'Crecimiento', 'Concentración', 'Ticket', 'Origen', 'TAC', 'Fuentes y metodología', '2,13 %', 'Tenencias conservadas']) expect(html).toContain(texto);
+    for (const texto of ['Universo de propuesta', 'Retorno bruto (supuesto)', 'Crecimiento', 'Concentración', 'Ticket', 'Comparación por posición', 'TAC', 'UF de referencia', '2,13 %', 'Se conserva', 'Costo actual', 'Costo propuesto', 'Riesgo y retornos de la cartera']) expect(html).toContain(texto);
+    expect(html).not.toContain('Fuentes y metodología');
+    expect(html).not.toContain('Criterio de los cambios');
+    expect(html).not.toContain('<summary>Origen: cartera actual</summary>');
+    expect(html).not.toContain('Trayectoria mensual');
+    expect(html).not.toContain('Detalle de instrumentos: tickets');
     expect(html).not.toContain('deuda_uf_mediano');
     expect(html).not.toContain('retencion');
     expect(html).not.toContain('Destinos por lote original');
+    expect(html).toContain('<tfoot>');
+    expect(html).toContain('Total cartera');
+    expect(html).toContain('Total propuesta');
   });
   it('no titula un resultado sin ahorro como mejora', () => {
     const r = proponerCostos(cargarEjemplo()); r.estado = 'sin_mejora'; r.ahorroAnualClp = '0';
@@ -97,14 +84,37 @@ describe('evidencia visible de nivel 2', () => {
   });
   it('muestra instrumentos, costo por escenario y tope de perfil de meta', () => {
     const html = renderToStaticMarkup(<GoalView propuesta={proponerMeta(cargarEjemplo())} />);
-    for (const texto of ['Ticket CLP', 'Liquidez', 'Tope de crecimiento del perfil', 'meses / 24', 'Costo acumulado', 'Pesos sobre capital asignado', 'TAC', 'base neta', 'Distribuidor de ejemplo', 'Trayectoria', 'referencia', 'supuesto', 'Cartera actual de referencia', '$230.000.000']) expect(html).toContain(texto);
+    for (const texto of ['Ticket CLP', 'Liquidez', 'Tope de crecimiento del perfil', 'Costo acumulado', 'Pesos sobre capital asignado', 'TAC', 'base neta', 'referencia', 'supuesto', 'Costos y riesgo de la cartera para la meta', 'Conclusión del análisis', 'Calendario de pagos', 'Distribución por plazos']) expect(html).toContain(texto);
+    expect(html).not.toContain('Trayectoria mensual');
+    expect(html).not.toContain('Detalle de instrumentos: tickets');
+    expect(html).not.toContain('Cartera actual de referencia');
+    expect(html).not.toContain('<summary>Criterios de asignación</summary>');
+    expect(html).not.toContain('<summary>Fuentes y metodología</summary>');
     expect(html).not.toContain('Restricciones respetadas');
     expect(html).not.toContain('Máximo reducido');
-    expect(html.indexOf('Pagos pendientes')).toBeLessThan(html.indexOf('Perfil y crecimiento'));
-    expect(html.indexOf('Escenarios (supuesto)')).toBeLessThan(html.indexOf('Instrumentos por tramo'));
-    expect(html).toContain('un excedente de VP puede coexistir con pagos pendientes');
+    expect(html.indexOf('Conclusión del análisis')).toBeGreaterThan(html.indexOf('Inversiones para la meta'));
+    expect(html.indexOf('Escenarios (supuesto)')).toBeLessThan(html.indexOf('Inversiones para la meta'));
+    expect(html).not.toContain('meses / 24');
+    expect(html).not.toContain('VP por pago');
     expect(html).toContain('126,2110 UF');
     expect(html).toContain('Primer pago con faltante');
+    expect(html.match(/class="ts-scenario"/g)).toHaveLength(3);
+    expect(html.match(/class="ts-scenario"[^>]*open=""/g)).toHaveLength(1);
+    const favorableInicio = html.indexOf('<span>Favorable</span>');
+    const favorable = html.slice(favorableInicio, html.indexOf('</details>', favorableInicio));
+    expect(favorable).toContain('Pago cubierto');
+    expect(favorable).not.toContain('Falta 10,7729 UF');
+    expect(html).not.toContain('Base de pesos y concentración');
+  });
+  it('representa las fechas de pago con distancias proporcionales y faltantes explícitos', () => {
+    const pagos = ['2031-01-01', '2031-01-11', '2031-01-31'].map((fecha, indice) => ({ fecha, indice, uf: '100', meses: '12', tramoId: 'T1', vpUf: '99', pendienteBaseUf: indice === 1 ? '5' : '0' }));
+    const html = renderToStaticMarkup(<GoalTimeline pagos={pagos} />);
+    const xs = [...html.matchAll(/<circle cx="([\d.]+)"/g)].map(m => Number(m[1]));
+    expect(xs).toHaveLength(3);
+    expect((xs[1] - xs[0]) / (xs[2] - xs[1])).toBeCloseTo(0.5);
+    expect(html).toContain('Falta 5,0000 UF');
+    expect(html).toContain('Pago cubierto');
+    expect(html).toContain('role="img"');
   });
   it('muestra el tope reducido solo cuando la proximidad del pago lo cambia', () => {
     const d = cargarEjemplo(); d.meta.desembolsos = [{ fecha: '2027-03-01', uf: 100 }];

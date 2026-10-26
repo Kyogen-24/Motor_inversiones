@@ -47,10 +47,10 @@ export default function DataPanel({ datos, validado, actualizando, erroresArchiv
         </div>
         <h3>{f.titulo}</h3><p>{f.descripcion}</p>
         <div className="ts-file-picker">
-          <input className="sr-only" key={`${f.tipo}-${revision}`} id={`archivo-${f.tipo}`} type="file" accept=".json,application/json" disabled={cargando}
-            aria-invalid={invalido || undefined} aria-label={`${seleccionado ? 'Cambiar' : 'Seleccionar'} JSON: ${f.titulo}`} aria-describedby={`nombre-${f.tipo}${invalido ? ` error-${f.tipo}` : ''}`}
+          <input className="sr-only" key={`${f.tipo}-${revision}`} id={`archivo-${f.tipo}`} type="file" accept=".json,.csv,application/json,text/csv" disabled={cargando}
+            aria-invalid={invalido || undefined} aria-label={`${seleccionado ? 'Cambiar' : 'Seleccionar'} JSON o CSV: ${f.titulo}`} aria-describedby={`nombre-${f.tipo}${invalido ? ` error-${f.tipo}` : ''}`}
             onChange={e => { const file = e.target.files?.[0]; if (file) alSeleccionar(f.tipo, file); }} />
-          <label htmlFor={`archivo-${f.tipo}`} className="ts-file-label"><Upload size={15} aria-hidden="true" />{seleccionado ? 'Cambiar archivo' : 'Seleccionar JSON'}</label>
+          <label htmlFor={`archivo-${f.tipo}`} className="ts-file-label"><Upload size={15} aria-hidden="true" />{seleccionado ? 'Cambiar archivo' : 'Seleccionar JSON o CSV'}</label>
         </div>
         <span id={`nombre-${f.tipo}`} className="ts-file-name" title={nombre || undefined}>{nombre || 'Ningún archivo seleccionado'}</span>
         {archivos[f.tipo] && nombres[f.tipo] && <p className="ts-replacement-note">Reemplazará a {nombres[f.tipo]}.</p>}

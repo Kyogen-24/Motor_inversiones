@@ -4,7 +4,7 @@
 
 El recorrido utiliza Archivos de entrada y Análisis de cartola. También existe Cómo se calcula. La navegación actual contiene otra modalidad, pero no pertenece al alcance de este contrato y no debe ocultarse en la documentación como si no existiera.
 
-La aplicación inicia vacía. Se seleccionan cartola, catálogo y acuerdos JSON; supuestos y meta no son necesarios para el diagnóstico. Hay controles para reemplazar archivos y limpiar datos, sin editor financiero, persistencia ni ejecución de operaciones.
+La aplicación inicia vacía. Se seleccionan cartola, catálogo y acuerdos en JSON o CSV; supuestos y meta no son necesarios para el diagnóstico. Hay controles para reemplazar archivos y limpiar datos, sin editor financiero, persistencia ni ejecución de operaciones.
 
 ## Carga y revisión
 

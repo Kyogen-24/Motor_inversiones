@@ -3,6 +3,8 @@ import type { Acuerdos, Cartola, Catalogo } from '../domain/model';
 import type { Meta, Supuestos } from '../domain/proposalModel';
 import { esFecha } from '../domain/numeric';
 import { validarSupuestos } from '../domain/proposalValidation';
+import { interpretarCartolaCsv } from './cartolaCsv';
+import { interpretarDocumentoCsv } from './documentoCsv';
 import catalogo from '../../data/catalogo.json';
 import acuerdos from '../../data/acuerdos.json';
 import cartola from '../../data/cartola.json';
@@ -165,8 +167,14 @@ export async function leerArchivo<K extends TipoEntrada>(tipo: K, file: File): P
   try { content = await file.text(); }
   catch { throw new ErrorArchivo(tipo, `«${file.name}»: no se pudo leer el archivo. Vuelve a seleccionarlo.`); }
   let data: unknown;
-  try { data = JSON.parse(content.replace(/^\uFEFF/, '')); }
-  catch { throw new ErrorArchivo(tipo, `«${file.name}» contiene JSON inválido y no se puede abrir. Solicita una copia corregida y vuelve a cargarla.`); }
+  const esCsv = /\.csv$/i.test(file.name) || file.type.split(';')[0] === 'text/csv';
+  if (esCsv) {
+    try { data = tipo === 'cartola' ? interpretarCartolaCsv(content) : interpretarDocumentoCsv(content); }
+    catch (error) { throw new ErrorArchivo(tipo, `«${file.name}»: ${error instanceof Error ? error.message : 'CSV inválido.'}`); }
+  } else {
+    try { data = JSON.parse(content.replace(/^\uFEFF/, '')); }
+    catch { throw new ErrorArchivo(tipo, `«${file.name}» contiene JSON inválido y no se puede abrir. Solicita una copia corregida y vuelve a cargarla.`); }
+  }
   const resultado = schemas[tipo].safeParse(data);
   if (resultado.success) {
     try { validarSemantica(tipo, resultado.data); return resultado.data; }

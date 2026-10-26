@@ -11,7 +11,7 @@ npm ci
 npm run dev
 ```
 
-Abrir la dirección local mostrada por Vite. La aplicación inicia vacía. Abre Archivos de entrada y selecciona los tres JSON de `data/` para analizar.
+Abrir la dirección local mostrada por Vite. La aplicación inicia vacía. Abre Archivos de entrada y selecciona cartola, catálogo y acuerdos de `data/`, en JSON o CSV, para analizar. Puedes combinar formatos.
 
 ```bash
 npm run typecheck
@@ -27,9 +27,11 @@ npm run preview
 1. La aplicación empieza vacía, en Archivos de entrada. Selecciona `data/cartola.json`, `data/catalogo.json` y `data/acuerdos.json`. Se leen y validan al seleccionar. Revisa su contenido en las pestañas Cartola, Catálogo y Acuerdos; después pulsa Analizar cartola. El botón se habilita cuando los tres archivos y sus referencias son válidos.
 2. En Vista general, revisa patrimonio, costos antes y después, ahorro elegible y oportunidades condicionadas.
 3. En Posiciones, busca un fondo. La flecha de cada fila abre Acceso y series, con alternativas, reglas y evidencia.
-4. Usa Actualizar archivos para reemplazar uno o varios JSON. Los demás se conservan; seleccionar un reemplazo retira los resultados anteriores. Los errores aparecen junto al archivo afectado y se enlazan desde el resumen.
+4. Usa Actualizar archivos para reemplazar uno o varios archivos. Los demás se conservan; seleccionar un reemplazo retira los resultados anteriores. Los errores aparecen junto al archivo afectado y se enlazan desde el resumen.
 5. Limpiar datos elimina archivos y resultados. Recargar la página también vuelve al inicio vacío. No se guarda una base de datos.
-6. Para costo, carga además `data/supuestos.json`, analiza y abre **Mejora de costos** en el menú lateral; pulsa **Generar mejora de costo**. Para meta, agrega `data/meta.json`, vuelve a analizar y abre **Planificación de meta**; pulsa **Armar propuesta para la meta**. Cada vista conserva su resultado al navegar. La generación usa un Worker local; puedes navegar durante el cálculo. Cambiar un archivo o limpiar cancela el cálculo anterior e invalida ambos resultados.
+6. **Analizar cartola** ejecuta el diagnóstico y, si cargaste `data/supuestos.json`, calcula automáticamente la mejora de costos. Con `data/meta.json` también calcula la planificación de la meta, después de costos. Consulta los resultados en el menú lateral; cada vista muestra el cliente y conserva su resultado. El cálculo de propuestas usa un Worker local y permite seguir navegando. Cambiar un archivo o limpiar cancela el cálculo anterior e invalida los resultados.
+
+**Los cinco archivos admiten JSON o CSV**. En `data/` hay una versión CSV de cartola, catálogo, acuerdos, supuestos y meta. La cartola usa una posición por fila; los otros cuatro documentos usan las columnas `ruta,tipo,valor` para conservar su estructura anidada. Se aceptan coma o punto y coma y campos entre comillas. Consulta cómo editar campos, representar nulos y respetar límites en [el contrato CSV](specs/001-diagnostico-cambio-serie/contracts/input-csv.md).
 
 En nivel 2 se mantienen o reducen volatilidad y costo sin usar retornos ni comisiones para seleccionar. Se respetan categoría, elegibilidad, perfil y concentración. Se conserva una tenencia barata aunque no admita compras nuevas. La búsqueda determinista explora hasta 50.000 nodos: informa la mejor propuesta encontrada, sin certificar un óptimo global ni la inexistencia de otras soluciones. Las exclusiones y tareas condicionales permanecen visibles.
 
@@ -49,9 +51,9 @@ Una selección nueva retira los resultados anteriores hasta analizar. Los errore
 src/
   domain/          modelos, validación semántica, costos y acceso
   application/     analizarCartola: caso de uso puro
-  infrastructure/  lectura JSON y Zod
+  infrastructure/  lectura JSON/CSV y validación con Zod
   presentation/    React, formato y estilos
-data/              archivos JSON de referencia y variantes de validación
+data/              archivos JSON/CSV de referencia y variantes de validación
 ```
 
 `data/` contiene archivos de entrada; no es una base de datos. La aplicación no requiere servidor de aplicación ni base de datos: el alojamiento estático o Vite solo entrega archivos.
@@ -115,4 +117,4 @@ El repositorio privado conserva los originales HTML/MD y anexos internos como re
 
 ## Límites funcionales
 
-No incluye controles del nivel 3, documento formal, SHA-256, historia ni CSV. El perfil limita crecimiento, pero no se valida su caducidad ni se infiere idoneidad real. El ahorro compara costos del catálogo cargado; las proyecciones son supuestos y no prometen rentabilidad ni representan todo el mercado. La persona revisa y decide.
+No incluye controles del nivel 3, documento formal, SHA-256 ni historia. El perfil limita crecimiento, pero no se valida su caducidad ni se infiere idoneidad real. El ahorro compara costos del catálogo cargado; las proyecciones son supuestos y no prometen rentabilidad ni representan todo el mercado. La persona revisa y decide.

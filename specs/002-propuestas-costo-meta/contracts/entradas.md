@@ -4,6 +4,8 @@
 
 `src/infrastructure/input.ts` reconoce las claves `supuestos` y `meta`, además de las entradas de nivel 1. Las definiciones tipadas compartidas están en `src/domain/proposalModel.ts`; Zod valida estructura y funciones puras validan relaciones y reglas. Este documento define la semántica que ambas capas verifican; React no mantiene modelos independientes.
 
+Las cinco entradas admiten JSON o CSV, combinados libremente. Supuestos y meta utilizan el CSV de rutas tipadas del [contrato común](../../001-diagnostico-cambio-serie/contracts/input-csv.md), que reconstruye la estructura completa antes de validar. Las versiones de referencia son `data/supuestos.csv` y `data/meta.csv`. El formato no cambia retornos, restricciones, cálculos ni reglas de selección.
+
 | Recorrido | Archivos requeridos | Resultado |
 | --- | --- | --- |
 | Diagnóstico | cartola, catálogo, acuerdos | `Analisis`, `nivel-1.1` |

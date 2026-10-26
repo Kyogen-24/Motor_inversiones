@@ -14,6 +14,11 @@ artifacts/
 # Solo versionar las entradas de ejemplo conocidas.
 data/*
 !data/cartola.json
+!data/cartola.csv
+!data/catalogo.csv
+!data/acuerdos.csv
+!data/supuestos.csv
+!data/meta.csv
 !data/catalogo.json
 !data/acuerdos.json
 !data/supuestos.json

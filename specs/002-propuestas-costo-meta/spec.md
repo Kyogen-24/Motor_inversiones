@@ -68,7 +68,7 @@ Se considera aceptado cuando:
 ### Entradas y reglas compartidas
 
 - **FR-001**: El nivel 2 conserva las validaciones, exclusiones y reglas R01, R02, R04 y R05. Las nuevas inversiones en fondos requieren acuerdo vigente y serie elegible; efectivo y depósitos mantienen su tratamiento sin serie ni acuerdo de AGF.
-- **FR-002**: Las entradas se cargan manualmente. Costo requiere cartola, catálogo, acuerdos y supuestos; meta requiere además sus desembolsos y capital asignado. Se conservan referencias, fechas, versiones y avisos. Un archivo ajeno a una modalidad no debe bloquearla.
+- **FR-002**: Las entradas se cargan manualmente en JSON o CSV, combinados libremente. Costo requiere cartola, catálogo, acuerdos y supuestos; meta requiere además sus desembolsos y capital asignado. CSV se convierte al mismo modelo y pasa por las mismas validaciones que JSON, según el [contrato de importación](contracts/entradas.md). Se conservan referencias, fechas, versiones y avisos. Un archivo ajeno a una modalidad no debe bloquearla.
 
 ### Mejora de costo — R07
 
