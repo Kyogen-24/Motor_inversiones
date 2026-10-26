@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
-import { ArrowUpRight, BookOpen, ChartNoAxesCombined, Database, Layers3, X } from 'lucide-react';
+import { ArrowUpRight, BadgeDollarSign, BookOpen, ChartNoAxesCombined, Database, Layers3, X } from 'lucide-react';
 
-export type Vista = 'analisis' | 'datos' | 'reglas';
+export type Vista = 'analisis' | 'datos' | 'reglas' | 'propuestas';
 interface Props {
   readonly vista: Vista;
   readonly abierto: boolean;
@@ -31,10 +31,11 @@ export default function Navigation({ vista, abierto, navegar, alCerrar }: Props)
       <div className="ts-nav-label">ESPACIO DE TRABAJO</div>
       <nav aria-label="Navegación principal">
         <button className={`ts-nav-item ${activo('analisis')}`} aria-current={vista === 'analisis' ? 'page' : undefined} onClick={() => navegar('analisis')}><ChartNoAxesCombined size={17} aria-hidden="true" />Análisis de cartola</button>
+        <button className={`ts-nav-item ${activo('propuestas')}`} aria-current={vista === 'propuestas' ? 'page' : undefined} onClick={() => navegar('propuestas')}><BadgeDollarSign size={17} aria-hidden="true" />Propuestas</button>
         <button className={`ts-nav-item ${activo('datos')}`} aria-current={vista === 'datos' ? 'page' : undefined} onClick={() => navegar('datos')}><Database size={17} aria-hidden="true" />Archivos de entrada</button>
         <button className={`ts-nav-item ${activo('reglas')}`} aria-current={vista === 'reglas' ? 'page' : undefined} onClick={() => navegar('reglas')}><BookOpen size={17} aria-hidden="true" />Cómo se calcula</button>
       </nav>
-      <div className="ts-sidebar-note"><Layers3 size={18} aria-hidden="true" /><h3>Evidencia para decidir</h3><p>El motor compara costos.<br />Una persona revisa y decide.</p><button onClick={() => navegar('reglas')}>Conocer las reglas<ArrowUpRight size={13} aria-hidden="true" /></button></div>
+      <div className="ts-sidebar-note"><Layers3 size={18} aria-hidden="true" /><h3>Análisis de cartera</h3><p>Costos, riesgo y cobertura.</p><button onClick={() => navegar('reglas')}>Metodología<ArrowUpRight size={13} aria-hidden="true" /></button></div>
     </dialog>
   );
 }

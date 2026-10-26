@@ -1,124 +1,98 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
+import type { RefObject } from 'react';
 import { ChevronRight, Layers3, PanelLeftClose, Upload } from 'lucide-react';
-import type { Analisis } from '../domain/model';
-import { analizarCartola } from '../application/analizarCartola';
-import { leerArchivos, errorDeAnalisis, type Entradas, type TipoEntrada } from '../infrastructure/input';
 import AnalysisView from './AnalysisView';
+import ProposalView from './ProposalView';
+import GoalView from './GoalView';
 import DataPanel from './DataPanel';
-import { validarNegocio } from '../domain/validation';
 import Navigation, { type Vista } from './Navigation';
-const titulosVista = { analisis: 'Análisis de cartola', datos: 'Archivos de entrada', reglas: 'Cómo se calcula' };
-const descripcionesVista = { analisis: 'Entiende lo que pagas. Descubre qué puedes mejorar.', datos: 'Carga los archivos para analizar costos y comparar series.', reglas: 'Cada cifra tiene una regla detrás.' };
-const nombresVacios = { cartola: '', catalogo: '', acuerdos: '' };
+import { useAppWorkflow } from './useAppWorkflow';
+import type { TipoEntrada } from '../infrastructure/input';
+const titulosVista = { analisis: 'Análisis de cartola', datos: 'Archivos de entrada', reglas: 'Cómo se calcula', propuestas: 'Propuestas' };
+const descripcionesVista = { analisis: 'Costos de la cartera y alternativas de ahorro.', datos: 'Cartola, catálogo, acuerdos y parámetros del análisis.', reglas: 'Metodología y criterios de cálculo.', propuestas: 'Comparación de costos, riesgo y cobertura.' };
+type Workflow = ReturnType<typeof useAppWorkflow>;
 
 export default function App() {
-  const [vista, setVista] = useState<Vista>('datos');
-  const [resultado, setResultado] = useState<Analisis | null>(null);
-  const [entradas, setEntradas] = useState<Partial<Entradas>>({});
-  const [revisionDatos, setRevisionDatos] = useState<Partial<Entradas>>({});
-  const [validado, setValidado] = useState(false);
-  const [nombres, setNombres] = useState(nombresVacios);
-  const [archivos, setArchivos] = useState<Partial<Record<TipoEntrada, File>>>({});
-  const [error, setError] = useState('');
-  const [erroresArchivo, setErroresArchivo] = useState<Partial<Record<TipoEntrada, string>>>({});
-  const [detalleError, setDetalleError] = useState('');
-  const [cargando, setCargando] = useState(false);
-  const [revision, setRevision] = useState(0);
-  const [menuAbierto, setMenuAbierto] = useState(false);
-  const operacion = useRef(0);
+  return <AppLayout {...useAppWorkflow()} />;
+}
+
+function AppLayout(workflow: Workflow) {
+  const { vista, setVista, resultado, menuAbierto, setMenuAbierto } = workflow;
   const titulo = useRef<HTMLHeadingElement>(null);
   const disparadorMenu = useRef<HTMLButtonElement>(null);
-
   useEffect(() => {
-    const media = window.matchMedia('(max-width: 760px)');
-    const cerrarEnEscritorio = () => { if (!media.matches) setMenuAbierto(false); };
-    media.addEventListener('change', cerrarEnEscritorio);
-    return () => media.removeEventListener('change', cerrarEnEscritorio);
-  }, []);
+    if (resultado) requestAnimationFrame(() => titulo.current?.focus());
+  }, [resultado]);
   useEffect(() => {
-    const id = ++operacion.current;
-    let cancelado = false;
-    async function revisar() {
-      setCargando(true); setValidado(false);
-      try {
-        const { cambios, errores } = await leerArchivos(archivos);
-        if (cancelado || operacion.current !== id) return;
-        const datos = { ...entradas };
-        for (const tipo of Object.keys(archivos) as TipoEntrada[]) delete datos[tipo];
-        for (const cambio of cambios) Object.assign(datos, { [cambio.tipo]: cambio.datos });
-        setRevisionDatos(datos); setErroresArchivo(errores);
-        if (Object.keys(errores).length || !datos.cartola || !datos.catalogo || !datos.acuerdos) return;
-        validarNegocio(datos.cartola, datos.catalogo, datos.acuerdos);
-        setValidado(true);
-      } catch (err) {
-        if (cancelado || operacion.current !== id) return;
-        const archivo = errorDeAnalisis(err);
-        if (archivo) setErroresArchivo({ [archivo.tipo]: archivo.message });
-        else setError('No se pudieron revisar los archivos. Vuelve a seleccionarlos.');
-      } finally { if (!cancelado && operacion.current === id) setCargando(false); }
-    }
-    void revisar();
-    return () => { cancelado = true; };
-  }, [archivos, entradas]);
+    if (workflow.error || workflow.propuesta) requestAnimationFrame(() => titulo.current?.focus());
+  }, [workflow.error, workflow.propuesta]);
   function cerrarMenu() {
     setMenuAbierto(false);
     requestAnimationFrame(() => disparadorMenu.current?.focus());
   }
   function navegar(next: Vista) { setVista(next); setMenuAbierto(false); requestAnimationFrame(() => titulo.current?.focus()); }
-  function seleccionar(tipo: TipoEntrada, archivo: File) {
-    operacion.current++;
-    setArchivos(prev => ({ ...prev, [tipo]: archivo }));
-    setValidado(false); setCargando(true);
-    setRevisionDatos(prev => { const datos = { ...prev }; delete datos[tipo]; return datos; });
-    setResultado(null); setError(''); setErroresArchivo(prev => { const siguiente = { ...prev }; delete siguiente[tipo]; return siguiente; }); setDetalleError('');
-  }
-  function limpiar() {
-    operacion.current++;
-    setRevisionDatos({}); setValidado(false);
-    setEntradas({}); setResultado(null); setNombres(nombresVacios); setArchivos({});
-    setRevision(r => r + 1); setError(''); setErroresArchivo({}); setDetalleError(''); setCargando(false);
-  }
-  function analizar() {
-    if (!validado || !revisionDatos.cartola || !revisionDatos.catalogo || !revisionDatos.acuerdos) return;
-    setError(''); setDetalleError('');
-    try {
-      const analisis = analizarCartola(revisionDatos.cartola, revisionDatos.catalogo, revisionDatos.acuerdos);
-      const etiquetas = { ...nombres };
-      for (const tipo of Object.keys(archivos) as TipoEntrada[]) etiquetas[tipo] = archivos[tipo]!.name;
-      setEntradas(revisionDatos); setNombres(etiquetas); setResultado(analisis); setArchivos({}); setRevision(r => r + 1);
-      setVista('analisis');
-      requestAnimationFrame(() => titulo.current?.focus());
-    } catch (err) {
-      const archivo = errorDeAnalisis(err);
-      if (archivo) { setValidado(false); setErroresArchivo({ [archivo.tipo]: archivo.message }); return; }
-      setError('No se pudo completar el análisis. Revisa la información para soporte y solicita archivos corregidos.');
-      setDetalleError(err instanceof Error ? err.message : 'Error no identificado.');
-    }
-  }
-  const tiposConError = (Object.keys(erroresArchivo) as TipoEntrada[]);
-  const etiquetasArchivo = { cartola: 'Cartola del cliente', catalogo: 'Catálogo de productos', acuerdos: 'Acuerdos de distribución' };
-  const actualizarDatos = Object.values(nombres).some(Boolean);
-  const datosVisibles = vista === 'datos' || (vista === 'analisis' && !resultado);
-
   return <div className="ts-app">
     <a className="ts-skip" href="#contenido">Saltar al contenido</a>
     <Navigation vista={vista} abierto={menuAbierto} navegar={navegar} alCerrar={cerrarMenu} />
     <div className="ts-main-shell">
       <header className="ts-topbar"><div className="ts-breadcrumb"><button ref={disparadorMenu} className="ts-icon-button ts-mobile-toggle" aria-label="Abrir navegación" aria-expanded={menuAbierto} onClick={() => setMenuAbierto(true)}><PanelLeftClose size={18} /></button><Layers3 size={15} aria-hidden="true" /><span>Espacio de trabajo</span><ChevronRight size={13} aria-hidden="true" /><strong>{titulosVista[vista]}</strong></div></header>
       <main id="contenido" className="ts-main" tabIndex={-1}>
-        <div className="ts-page-heading"><div><h1 ref={titulo} tabIndex={-1}>{titulosVista[vista]}</h1><p>{descripcionesVista[vista]}</p></div>
-          {vista === 'analisis' && resultado && <button className="ts-button ts-button--primary" onClick={() => navegar('datos')}><Upload size={15} aria-hidden="true" />Actualizar archivos</button>}
-        </div>
-        {datosVisibles && (error || tiposConError.length > 0) && <div className="ts-error" role="alert"><strong>Revisa los archivos indicados</strong>{error && <p>{error}</p>}{tiposConError.length > 0 && <ul>{tiposConError.map(tipo => <li key={tipo}><a href={`#archivo-${tipo}`}>{etiquetasArchivo[tipo]}: revisar los datos señalados.</a></li>)}</ul>}{detalleError && <details><summary>Información para soporte</summary><p>{detalleError}</p></details>}</div>}
-        {datosVisibles && <DataPanel datos={revisionDatos} validado={validado} actualizando={actualizarDatos} erroresArchivo={erroresArchivo} nombres={nombres} archivos={archivos} alSeleccionar={seleccionar} alAnalizar={analizar} alLimpiar={limpiar} cargando={cargando} revision={revision} listo={validado} />}
-        {vista === 'reglas' && <Reglas />}
-        {resultado && <div hidden={vista !== 'analisis'}><AnalysisView resultado={resultado} /></div>}
-
+        <PageHeading vista={vista} resultado={resultado} titulo={titulo} alActualizar={() => navegar('datos')} />
+        {vista !== 'datos' && workflow.error && <div className="ts-error" role="alert"><strong>No se pudo generar la propuesta</strong><p>{workflow.error}</p><button className="ts-button" onClick={() => navegar('datos')}>Revisar archivos de entrada</button><details><summary>Información para soporte</summary><p>{workflow.detalleError}</p></details></div>}
+        {workflow.calculando && <p role="status">Calculando propuesta… Puedes seguir navegando.</p>}
+        <ContenidoPrincipal workflow={workflow} />
       </main>
     </div>
   </div>;
 }
 
+function PageHeading({ vista, resultado, titulo, alActualizar }: Readonly<{ vista: Vista; resultado: Workflow['resultado']; titulo: RefObject<HTMLHeadingElement | null>; alActualizar: () => void }>) {
+  return <div className="ts-page-heading"><div><h1 ref={titulo} tabIndex={-1}>{titulosVista[vista]}</h1><p>{descripcionesVista[vista]}</p></div>
+    {vista === 'analisis' && resultado && <button className="ts-button ts-button--primary" onClick={alActualizar}><Upload size={15} aria-hidden="true" />Actualizar archivos</button>}
+  </div>;
+}
+
+function ContenidoPrincipal({ workflow }: Readonly<{ workflow: Workflow }>) {
+  if (workflow.vista === 'datos') return <PanelDatos workflow={workflow} />;
+  if (workflow.vista === 'reglas') return <Reglas />;
+  if (workflow.vista === 'analisis') return workflow.resultado ? <VistaAnalisis workflow={workflow} /> : <PanelDatos workflow={workflow} />;
+  return <VistaPropuestas workflow={workflow} />;
+}
+
+function PanelDatos({ workflow }: Readonly<{ workflow: Workflow }>) {
+  const tiposConError = Object.keys(workflow.erroresArchivo) as TipoEntrada[];
+  const etiquetas: Record<TipoEntrada, string> = { cartola: 'Cartola del cliente', catalogo: 'Catálogo de productos', acuerdos: 'Acuerdos de distribución', supuestos: 'Supuestos', meta: 'Meta' };
+  const actualizarDatos = Object.values(workflow.nombres).some(Boolean);
+  return <>
+    {(workflow.error || tiposConError.length > 0) && <div className="ts-error" role="alert"><strong>Revisa los archivos indicados</strong>{workflow.error && <p>{workflow.error}</p>}{tiposConError.length > 0 && <ul>{tiposConError.map(tipo => <li key={tipo}><a href={`#archivo-${tipo}`}>{etiquetas[tipo]}: revisar los datos señalados.</a></li>)}</ul>}{workflow.detalleError && <details><summary>Información para soporte</summary><p>{workflow.detalleError}</p></details>}</div>}
+    <DataPanel datos={workflow.revisionDatos} validado={workflow.validado} actualizando={actualizarDatos} erroresArchivo={workflow.erroresArchivo} nombres={workflow.nombres} archivos={workflow.archivos} alSeleccionar={workflow.seleccionar} alAnalizar={workflow.analizar} alLimpiar={workflow.limpiar} cargando={workflow.cargando} revision={workflow.revision} listo={workflow.validado} />
+  </>;
+}
+
+function VistaAnalisis({ workflow }: Readonly<{ workflow: Workflow }>) {
+  return <><AnalysisView resultado={workflow.resultado!} /><AccionesPropuestas workflow={workflow} /></>;
+}
+
+export function AccionesPropuestas({ workflow }: Readonly<{ workflow: Pick<Workflow, 'resultado' | 'entradas' | 'calculando' | 'generarCosto' | 'generarMeta'> }>) {
+  const disponible = Boolean(workflow.resultado && workflow.entradas.supuestos);
+  return <div>
+    <div className="ts-input-actions"><button className="ts-button ts-button--primary" disabled={!disponible || workflow.calculando} onClick={workflow.generarCosto}>Generar mejora de costo</button><button className="ts-button" disabled={!disponible || !workflow.entradas.meta || workflow.calculando} onClick={workflow.generarMeta}>Armar propuesta para la meta</button></div>
+    {!workflow.resultado ? <p className="ts-muted">Carga los archivos de entrada y analiza la cartola para generar propuestas.</p> : !workflow.entradas.supuestos ? <p className="ts-muted">Agrega los supuestos y vuelve a analizar la cartola para generar propuestas.</p> : !workflow.entradas.meta && <p className="ts-muted">Agrega la meta y vuelve a analizar la cartola para evaluar sus pagos.</p>}
+  </div>;
+}
+
+function VistaPropuestas({ workflow }: Readonly<{ workflow: Workflow }>) {
+  const { propuesta } = workflow;
+  return <><AccionesPropuestas workflow={workflow} />{!workflow.resultado && <button className="ts-button" onClick={() => workflow.setVista('datos')}>Ir a archivos de entrada</button>}{propuesta && (propuesta.modalidad === 'costo' ? <ProposalView propuesta={propuesta} /> : <GoalView propuesta={propuesta} />)}</>;
+}
+
 function Reglas() {
-  return <article className="ts-rules"><section><h2>Un diagnóstico, no una ejecución</h2><p>Varenne analiza costos y compara series del mismo fondo y AGF. No cambia instrumentos ni montos. No ejecuta operaciones. Una persona revisa la evidencia y decide.</p></section><section><h2>Qué entra en el cálculo</h2><dl><div><dt>R02 · Costo anual</dt><dd>Monto declarado × TAC anual porcentual / 100.</dd></div><div><dt>TAC ponderada</dt><dd>Suma de costos anuales / monto computable × 100. Depósitos y efectivo entran con costo cero. Seguros, otros productos y líneas sin identificar se excluyen; ETF solo entran con costo declarado.</dd></div><div><dt>R05 · Ahorro elegible</dt><dd>Diferencia entre TAC actual y menor TAC elegible × monto / 100. Solo se propone un cambio si reduce estrictamente el costo. Un punto porcentual equivale a 100 puntos base.</dd></div><div><dt>Ahorro condicional</dt><dd>Reducción adicional respecto de la mejor opción elegible aplicada, o de la actual. Se muestra separada y exige confirmación escrita, actualización de datos y reevaluación completa.</dd></div></dl></section><section><h2>R01 y R04 · Orden de acceso</h2><p>El acuerdo debe estar activo, empezar antes del corte y no haber terminado antes del corte. La primera coincidencia determina el estado:</p><ol start={0}><li>Sin acuerdo vigente o sin habilitación de la serie: fuera de alcance.</li><li>Serie cerrada: bloqueada.</li><li>Solo APV y cliente sin APV: bloqueada.</li><li>Mandato requerido y ausente: condicional.</li><li>Ticket bajo el mínimo, patrimonio suficiente y fecha anterior o igual al corte: condicional.</li><li>Ticket bajo el mínimo sin patrimonio válido suficiente al corte: bloqueada.</li><li>Sin restricciones anteriores: elegible.</li></ol><p>La fecha del patrimonio solo se revisa al necesitar agregación; no bloquea series cuyo ticket cumple el mínimo ni reemplaza una regla anterior. Las comisiones no intervienen en costos, selección ni desempates. En empate con la serie actual se conserva la tenencia; entre alternativas más baratas se usa el código en orden lexicográfico.</p></section><section><h2>Precisión y límites</h2><p>Se utiliza el monto declarado y se advierte si cuotas × valor cuota difiere en más de 1 CLP. Se calculan decimales con 40 dígitos significativos; se redondea solo al presentar: CLP al peso, TAC ponderada a cuatro decimales y pesos a dos, con mitades hacia arriba.</p><p>Hasta 10.000 posiciones, 1.000 productos, 100 series por producto y 5 MB por archivo. Números de hasta 16 dígitos significativos; importes entre 0 y 1.000.000.000.000.000, mínimo positivo 0,00000001. Tasas entre 0 y 100 %. Fechas entre 1900 y 2200.</p><p>La fecha de corte determina la vigencia. Si la base es cero, TAC y pesos se muestran como no disponibles. Las posiciones duplicadas se conservan; sus tickets no se suman para alcanzar mínimos.</p></section><section><h2>Alcance de esta entrega</h2><p>Nivel 1: R01, R02, R04 y R05, con independencia de comisiones. No incluye metas, retornos, reasignación entre fondos, controles completos del nivel 3, documento firmado ni huella SHA-256.</p></section></article>;
+  return <article className="ts-rules">
+    <section><h2>Costos de la cartera</h2><p>Costo anual = monto invertido × TAC / 100. La TAC ponderada se calcula sobre el capital computable.</p><p>Efectivo y depósitos tienen costo cero. Seguros, productos sin costo verificable y posiciones sin identificar se presentan por separado.</p></section>
+    <section><h2>Acceso a series</h2><p>El acuerdo debe estar activo al corte, con inicio anterior y término igual o posterior. La primera condición aplicable determina el acceso:</p><ol><li>Sin acuerdo vigente o sin habilitación de la serie: fuera de alcance.</li><li>Serie cerrada: bloqueada.</li><li>Serie APV sin plan APV: bloqueada.</li><li>Mandato requerido y ausente: condicional.</li><li>Ticket bajo el mínimo con patrimonio suficiente al corte: condicional.</li><li>Ticket bajo el mínimo sin patrimonio válido suficiente: bloqueada.</li><li>Sin restricciones anteriores: elegible.</li></ol><p>Las condiciones requieren confirmación y una nueva evaluación. Una tenencia actual no autoriza por sí sola nuevas compras.</p></section>
+    <section><h2>Comparación de costos</h2><p>El ahorro anual es la diferencia de TAC aplicada al monto invertido. El ahorro condicional se muestra separado y parte de la mejor alternativa elegible o de la tenencia actual.</p><p>Las propuestas de costo mantienen o reducen la volatilidad, respetan concentración y perfil y conservan categorías salvo ajustes necesarios para cumplir esas restricciones. Las comisiones no intervienen en selección, costos ni desempates.</p></section>
+    <section><h2>Asignación para metas</h2><p>Los pagos se ordenan por fecha y se financian con inversiones acordes al plazo. El VP usa el retorno real bruto supuesto de las categorías seleccionadas. El capital se reserva para los pagos próximos y el excedente se destina al tramo más largo.</p><p>El máximo de crecimiento se reduce al acercarse el primer pago: máximo del perfil × min(1, meses / 24). La cobertura corresponde a las UF efectivamente pagadas. La conclusión base incluye los costos y distingue pagos pendientes de déficit de VP.</p></section>
+    <section><h2>Proyecciones · supuesto</h2><p>Retorno real neto = retorno bruto ponderado − TAC ponderada. Los escenarios ajustan el bruto en −1,5 puntos porcentuales, sin ajuste y +1,5 puntos porcentuales.</p><p>El costo acumulado suma el saldo medio de cada período por la TAC y el plazo. Se consideran aniversarios mensuales, fechas de liquidación y pagos, con días reales / 365,25.</p></section>
+    <section><h2>Fuentes y valorización</h2><p>Los cálculos utilizan los archivos cargados y la fecha de corte. Las equivalencias CLP/UF usan el valor y la fecha de referencia indicados. Retornos y volatilidad son supuestos declarados.</p><p>El monto declarado es la base del análisis. Se advierten diferencias superiores a 1 CLP respecto de cuotas por valor cuota.</p></section>
+  </article>;
 }

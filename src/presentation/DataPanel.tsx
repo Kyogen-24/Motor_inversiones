@@ -6,13 +6,15 @@ const fuentes = [
   { tipo: 'cartola', titulo: 'Cartola del cliente', descripcion: 'Posiciones, montos, corte y condición APV.' },
   { tipo: 'catalogo', titulo: 'Catálogo de productos', descripcion: 'Emisores, series, costos y mínimos.' },
   { tipo: 'acuerdos', titulo: 'Acuerdos de distribución', descripcion: 'Vigencia, habilitación, mandato y patrimonio.' },
+  { tipo: 'supuestos', titulo: 'Supuestos', descripcion: 'Retornos, volatilidad, perfiles, tramos y escenarios.' },
+  { tipo: 'meta', titulo: 'Meta', descripcion: 'Capital asignado y desembolsos futuros en UF.' },
 ] as const;
 interface Props {
   readonly datos: Partial<Entradas>;
   readonly validado: boolean;
   readonly actualizando: boolean;
   readonly erroresArchivo: Partial<Record<TipoEntrada, string>>;
-  readonly nombres: Record<TipoEntrada, string>;
+  readonly nombres: Partial<Record<TipoEntrada, string>>;
   readonly archivos: Partial<Record<TipoEntrada, File>>;
   readonly alSeleccionar: (tipo: TipoEntrada, archivo: File) => void;
   readonly alAnalizar: () => void;
@@ -25,8 +27,8 @@ export default function DataPanel({ datos, validado, actualizando, erroresArchiv
   const disponibles = fuentes.filter(f => archivos[f.tipo] || nombres[f.tipo]);
   const faltantes = fuentes.filter(f => !archivos[f.tipo] && !nombres[f.tipo]);
   return <section className="ts-input-panel" aria-labelledby="datos-title">
-    <div className="ts-section-heading"><div><h2 id="datos-title">{actualizando ? 'Actualizar archivos' : 'Selecciona los tres archivos'}</h2><p>{actualizando ? 'Reemplaza los archivos que cambiaron. Se conservarán los demás para el nuevo análisis.' : 'Necesitas la cartola del cliente, el catálogo de productos y los acuerdos de distribución.'}</p></div></div>
-    <p className="ts-upload-progress" aria-live="polite">{disponibles.length} de 3 archivos disponibles.{faltantes.length > 0 && ` Falta: ${faltantes.map(f => f.titulo.toLowerCase()).join(', ')}.`}</p>
+    <div className="ts-section-heading"><div><h2 id="datos-title">{actualizando ? 'Actualizar archivos' : 'Selecciona archivos de entrada'}</h2><p>Cartola, catálogo y acuerdos para el diagnóstico. Supuestos para proyecciones y meta para evaluar pagos.</p></div></div>
+    <p className="ts-upload-progress" aria-live="polite">{disponibles.length} de 5 archivos disponibles.{faltantes.length > 0 && ` Falta: ${faltantes.map(f => f.titulo.toLowerCase()).join(', ')}.`}</p>
     <div className="ts-source-grid">{fuentes.map(f => {
       const nombre = archivos[f.tipo]?.name || nombres[f.tipo];
       const seleccionado = Boolean(nombre);
@@ -60,6 +62,6 @@ export default function DataPanel({ datos, validado, actualizando, erroresArchiv
       <button className="ts-button" onClick={alLimpiar} disabled={cargando}><RotateCcw size={15} aria-hidden="true" />Limpiar datos</button>
       <p>Hasta 5 MB por archivo.</p>
     </div>
-    <InputReview datos={datos} nombres={{ cartola: archivos.cartola?.name || nombres.cartola, catalogo: archivos.catalogo?.name || nombres.catalogo, acuerdos: archivos.acuerdos?.name || nombres.acuerdos }} errores={erroresArchivo} />
+    <InputReview datos={datos} nombres={{ cartola: archivos.cartola?.name || nombres.cartola, catalogo: archivos.catalogo?.name || nombres.catalogo, acuerdos: archivos.acuerdos?.name || nombres.acuerdos, supuestos: archivos.supuestos?.name || nombres.supuestos, meta: archivos.meta?.name || nombres.meta }} errores={erroresArchivo} />
   </section>;
 }

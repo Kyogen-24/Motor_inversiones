@@ -2,27 +2,19 @@
 
 ## Project Structure
 
-This repository currently contains one self-contained Spanish-language HTML prototype: `test-motor-de-propuestas.html`. It embeds the document markup, design tokens, component CSS, sample JSON payloads, SVG artwork, and small browser-side interactions. There are no separate source, asset, dependency, or test directories yet. Keep related changes in this file unless the project is deliberately split into a maintainable application structure.
+La aplicación mantenible está en `src/`, separada en dominio, aplicación, infraestructura y presentación. Las entradas de referencia y sus variantes viven en `data/`; la especificación de nivel 1 está en `specs/001-diagnostico-cambio-serie/` y la de nivel 2 en `specs/002-propuestas-costo-meta/`. `test-motor-de-propuestas.html` conserva el prototipo original como referencia local y no es la superficie de implementación de la aplicación.
 
 ## Run and Verify Locally
 
-No build step or package manager is configured. Open the prototype directly in a modern browser:
-
-```bash
-xdg-open test-motor-de-propuestas.html
-```
-
-Before submitting a change, manually check the page at desktop and narrow mobile widths. Confirm navigation links, expandable rule and data sections, copy-JSON buttons, hash links, and keyboard focus indicators work. Use the browser console to catch JavaScript errors. If tooling is introduced, document its install, build, lint, and test commands in `README.md` and update this guide.
+Instalar con `npm ci`. Usar `npm run dev` para desarrollo, `npm run typecheck` para tipos, `npm test` para regresiones, `npm run build` para la compilación y `npm run preview` para revisar la compilación estática. Antes de entregar cambios de interfaz, revisar escritorio, móvil estrecho, foco, tablas desplazables y consola del navegador.
 
 ## Coding Style and Naming
 
-Use two-space indentation for new HTML, CSS, and JavaScript; preserve the compact formatting of nearby generated-style rules unless reformatting a whole coherent block. Keep user-facing copy in Spanish and retain UTF-8 encoding.
-
-Follow the established CSS vocabulary: lowercase kebab-case classes such as `.ts-rule-body`, component modifiers such as `.band--tonal`, and custom properties such as `--c-primary` and `--brand-accent`. Prefer existing design tokens over literal colors, dimensions, or font declarations. Scope page-specific styles with the existing `ts-` prefix. Keep JavaScript dependency-free, wrapped in the existing IIFE, and use descriptive `var` names consistent with the surrounding code.
+TypeScript usa modo estricto, dos espacios y textos visibles en español. Aplicar los tokens de `DESIGN.md` y el prefijo CSS `ts-`; preferir controles nativos accesibles. Dominio y aplicación no importan React, Zod ni lectores de archivos. Los cálculos financieros pertenecen al motor y la presentación solo formatea resultados ya resueltos.
 
 ## Testing Guidance
 
-There is no automated test framework or coverage target. Treat the manual checks above as the required regression pass. When changing embedded sample data, verify displayed totals and labels remain consistent with the JSON. Add automated tests alongside any future extracted application code and name them after the behavior they cover.
+Vitest cubre motor, importación, Worker y presentación. Ejecutar `npm test` y las comprobaciones proporcionales al cambio; las pruebas nuevas se colocan junto al módulo que verifican. Los datos de referencia no se cargan automáticamente en la interfaz ni se sustituyen por datos reales de clientes.
 
 ## Commits and Pull Requests
 
@@ -30,8 +22,10 @@ This directory has no accessible Git history, so no repository-specific conventi
 
 ## Aplicación extraída (2026-10-22)
 
-La aplicación mantenible está en `src/`: dominio, aplicación, infraestructura, presentación. Los archivos de entrada ficticios están en `data/`; la aplicación inicia vacía y requiere carga manual. Conservar el HTML/MD original como referencia local. La aplicación sigue ARCHITECTURE.md y la especificación de nivel 1. TypeScript utiliza modo estricto; mantener dos espacios y textos en español. Aplicación y dominio no deben importar React, Zod ni lectores de archivos. Los cálculos financieros pertenecen al motor.
+Nivel 2 corregido el 2026-10-25: `specs/002-propuestas-costo-meta/` es autoridad para R03/R06/R07. `npm test` incluye regresiones del motor, evidencia React y adaptador de Worker. Las propuestas se calculan en `proposal.worker.ts`; el hook debe invalidar y cancelar revisiones anteriores. Mantener `admisible` separado de cobertura y ahorro. No certificar optimalidad de una búsqueda de candidatos limitada a 50.000 nodos. Ver `docs/correccion-nivel-2.md` para aceptación y límites.
 
-Instalación: `npm ci`. Desarrollo: `npm run dev`. Tipos: `npm run typecheck`. Compilación: `npm run build`. Vista de compilación: `npm run preview`. No existe un comando de lint independiente. Pruebas del motor e importación: `npm test`. Modo de desarrollo de pruebas: `npm run test:watch`. Las pruebas están en `src/application/analizarCartola.test.ts` y `src/infrastructure/input.test.ts`. No afirmar que pasaron pruebas que no se ejecutaron.
+La aplicación mantenible está en `src/`: dominio, aplicación, infraestructura, presentación. Los archivos de referencia están en `data/`; la aplicación inicia vacía y requiere carga manual. Conservar el HTML/MD original como referencia local. La aplicación sigue `ARCHITECTURE.md` y las especificaciones de nivel 1 y 2. TypeScript utiliza modo estricto; mantener dos espacios y textos en español. Aplicación y dominio no deben importar React, Zod ni lectores de archivos. Los cálculos financieros pertenecen al motor.
+
+Instalación: `npm ci`. Desarrollo: `npm run dev`. Tipos: `npm run typecheck`. Compilación: `npm run build`. Vista de compilación: `npm run preview`. No existe un comando de lint independiente. Pruebas del motor e importación: `npm test`. Modo de desarrollo de pruebas: `npm run test:watch`. Las pruebas están junto a los módulos de dominio, aplicación, infraestructura y presentación. No afirmar que pasaron pruebas que no se ejecutaron.
 
 Utilizar los tokens de DESIGN.md y el prefijo CSS `ts-`. Preferir controles nativos accesibles. Las tablas anchas deben estar dentro de regiones desplazables accesibles por teclado. Revisar escritorio, móvil estrecho y foco cuando haya navegador disponible; declarar cualquier revisión visual pendiente. Publicar solo `dist/`; no publicar el enunciado original ni los anexos internos.

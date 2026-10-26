@@ -3,6 +3,8 @@
 
 **Theme:** light
 
+Aplicación de nivel 2 (2026-10-24): mantener etiquetas «supuesto» junto a retornos, volatilidad, VP y escenarios. Distinguir déficit VP, pendiente neto y capital no asignable mediante texto. Las tablas de asignaciones, acceso y trayectorias usan regiones con nombre accesible y foco de teclado; en móvil se desplazan dentro de su panel. El encabezado de costo depende del estado y admisibilidad, y no llama mejora a un ahorro cero. Detalles de evidencia y cartera actual de referencia son expandibles nativos.
+
 Source measurements are normalized; roles and recommendations are interpreted. Font summary lists are independent, not paired by position. HTML examples are reconstructions, not source components.
 
 Attio uses an editorial SaaS language: near-white canvas, near-black type, and one vivid cobalt accent (#266df0) that does the talking while everything else stays quiet. The type stack is a deliberate three-voice system — Inter for UI, InterDisplay for marketing headlines at weight 600 with tight tracking, and TiemposText (serif) for testimonial/pull-quote moments that need warmth and human weight. Components feel light and precise: 7px and 12px radii, hairline borders, blue-tinted shadows at very low opacity, and ghost/outline buttons that defer to the primary filled dark action. Layout breathes — generous vertical rhythm with a 1440px max-width — but density is compact within cards and lists. The signature move is restraint: the same monochrome restraint you'd see in a financial publication, punctuated by exactly one chromatic moment per screen.

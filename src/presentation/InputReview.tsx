@@ -3,11 +3,14 @@ import type { ReactNode } from 'react';
 import type { Acuerdos, Cartola, Catalogo } from '../domain/model';
 import { sumar } from '../domain/numeric';
 import type { Entradas, TipoEntrada } from '../infrastructure/input';
+import type { Meta, Supuestos } from '../domain/proposalModel';
 import { clp, fecha } from './format';
 
-const etiquetas = { cartola: 'Cartola', catalogo: 'Catálogo', acuerdos: 'Acuerdos' };
+const etiquetas: Record<TipoEntrada, string> = { cartola: 'Cartola', catalogo: 'Catálogo', acuerdos: 'Acuerdos', supuestos: 'Supuestos', meta: 'Meta' };
+const camposPrincipales: Record<TipoEntrada, string[]> = { cartola: ['cliente', 'corte', 'moneda', 'posiciones'], catalogo: ['version', 'corte_costos', 'fuente_costos', 'emisores', 'productos'], acuerdos: ['distribuidor', 'acuerdos', 'productos_sin_serie'], supuestos: [], meta: [] };
+const base = new Set<TipoEntrada>(['cartola', 'catalogo', 'acuerdos']);
 const formatoCantidad = new Intl.NumberFormat('es-CL', { maximumSignificantDigits: 21 });
-const cantidad = (valor: number | null) => valor === null ? 'Sin dato (null)' : formatoCantidad.format(valor);
+const cantidad = (valor: number | null) => valor === null ? 'Sin dato' : formatoCantidad.format(valor);
 const montoEntrada = (valor: number) => `$${cantidad(valor)}`;
 const tasaEntrada = (valor: number) => `${cantidad(valor)} %`;
 const siNo = (valor: boolean) => valor ? 'Sí' : 'No';
@@ -20,26 +23,47 @@ const nombreEmisor = (id: string, catalogo?: Catalogo) => catalogo?.emisores.fin
 
 export default function InputReview({ datos, nombres, errores }: Readonly<{
   datos: Partial<Entradas>;
-  nombres: Record<TipoEntrada, string>;
+  nombres: Partial<Record<TipoEntrada, string>>;
   errores: Partial<Record<TipoEntrada, string>>;
 }>) {
   const [activa, setActiva] = useState<TipoEntrada>('cartola');
   if (!Object.values(nombres).some(Boolean)) return null;
   return <section className="ts-input-review" aria-labelledby="revision-title">
     <div className="ts-section-heading"><h2 id="revision-title">Revisa los datos</h2></div>
-    <nav className="ts-tabs" aria-label="Datos de los archivos">{(Object.keys(etiquetas) as TipoEntrada[]).map(tipo =>
+    <nav className="ts-tabs" aria-label="Datos de los archivos">{(Object.keys(etiquetas) as TipoEntrada[]).filter(tipo => nombres[tipo] || datos[tipo] || base.has(tipo)).map(tipo =>
       <button key={tipo} type="button" className={activa === tipo ? 'is-active' : ''} aria-pressed={activa === tipo} aria-controls="revision-contenido" onClick={() => setActiva(tipo)}>{etiquetas[tipo]}</button>
     )}</nav>
     <section id="revision-contenido" aria-label={etiquetas[activa]}>
       <p className="ts-review-file">{nombres[activa] || 'Archivo sin seleccionar'}</p>
       {errores[activa] && <p className="ts-review-warning">Este archivo requiere correcciones. Revisa el aviso de su tarjeta.</p>}
       {!datos[activa] && <p className="ts-muted">Selecciona un archivo con formato válido para ver su contenido.</p>}
-      {activa === 'cartola' && datos.cartola && <CartolaReview cartola={datos.cartola} catalogo={datos.catalogo} />}
-      {activa === 'catalogo' && datos.catalogo && <CatalogoReview catalogo={datos.catalogo} />}
-      {activa === 'acuerdos' && datos.acuerdos && <AcuerdosReview acuerdos={datos.acuerdos} catalogo={datos.catalogo} />}
-      {datos[activa] && <Adicionales titulo="Otros campos del archivo" datos={datos[activa]} conocidos={activa === 'cartola' ? ['cliente', 'corte', 'moneda', 'posiciones'] : activa === 'catalogo' ? ['version', 'corte_costos', 'fuente_costos', 'emisores', 'productos'] : ['distribuidor', 'acuerdos', 'productos_sin_serie']} />}
+      <ContenidoArchivo activa={activa} datos={datos} />
+      {datos[activa] && <Adicionales titulo="Otros campos del archivo" datos={datos[activa]} conocidos={camposPrincipales[activa]} />}
     </section>
   </section>;
+}
+function ContenidoArchivo({ activa, datos }: Readonly<{ activa: TipoEntrada; datos: Partial<Entradas> }>) {
+  switch (activa) {
+    case 'cartola': return datos.cartola && <CartolaReview cartola={datos.cartola} catalogo={datos.catalogo} />;
+    case 'catalogo': return datos.catalogo && <CatalogoReview catalogo={datos.catalogo} />;
+    case 'acuerdos': return datos.acuerdos && <AcuerdosReview acuerdos={datos.acuerdos} catalogo={datos.catalogo} />;
+    case 'supuestos': return datos.supuestos && <SupuestosReview supuestos={datos.supuestos} />;
+    case 'meta': return datos.meta && <MetaReview meta={datos.meta} />;
+  }
+}
+
+export function SupuestosReview({ supuestos: s }: Readonly<{ supuestos: Supuestos }>) {
+  return <><Ficha campos={[
+    ['Versión de supuestos', s.version ?? 'No informada'], ['Fuente de supuestos', s.fuente ?? 'No informada'], ['Fecha de supuestos', s.fecha ?? 'No informada'], ['Valor UF de referencia', montoEntrada(s.uf.valor_clp)], ['Fecha UF', fecha(s.uf.fecha)],
+  ]} /><Tabla titulo="Categorías · supuesto" columnas={['Categoría', 'Retorno real bruto · supuesto', 'Volatilidad · supuesto', 'Factor crecimiento']} filas={Object.entries(s.categorias).map(([cat, v]) => [cat, tasaEntrada(v.retorno_real_bruto_pct), tasaEntrada(v.volatilidad_pct), cantidad(v.peso_crecimiento)])} />
+    <Tabla titulo="Tramos" columnas={['Tramo', 'Desde meses (incluido)', 'Hasta meses (excluido)', 'Categorías en orden']} filas={s.tramos.map(t => [t.id, cantidad(t.desde_meses), t.hasta_meses === null ? 'Sin límite superior' : cantidad(t.hasta_meses), t.categorias.join(', ')])} />
+    <Tabla titulo="Perfiles" columnas={['Perfil', 'Máximo crecimiento']} filas={Object.entries(s.perfiles).map(([id, p]) => [id, tasaEntrada(p.max_crecimiento_pct)])} />
+    <Ficha campos={[[ 'Máximo por fondo', tasaEntrada(s.limites.max_por_fondo_pct) ], ['Máximo por AGF', tasaEntrada(s.limites.max_por_agf_pct)]]} />
+    <Tabla titulo="Escenarios · supuesto" columnas={['Escenario', 'Ajuste bruto · pp']} filas={s.escenarios.map(e => [e.id, cantidad(e.ajuste_retorno_pp)])} />
+  </>;
+}
+export function MetaReview({ meta: m }: Readonly<{ meta: Meta }>) {
+  return <><Ficha campos={[[ 'Nombre de meta', m.nombre ], ['Tipo de meta', m.tipo], ['Cliente', m.referencia_cliente], ['Capital asignado', montoEntrada(m.capital_asignado_clp)], ['Fecha de referencia', fecha(m.fecha_referencia)], ['Valor UF de referencia', montoEntrada(m.valor_uf_clp)]]} /><Tabla titulo="Desembolsos" columnas={['Fecha', 'Monto UF']} filas={m.desembolsos.map(p => [fecha(p.fecha), cantidad(p.uf)])} /></>;
 }
 
 function Ficha({ campos }: Readonly<{ campos: [string, ReactNode][] }>) {
@@ -49,20 +73,20 @@ function Ficha({ campos }: Readonly<{ campos: [string, ReactNode][] }>) {
 // Los objetos abiertos del contrato conservan campos adicionales, también anidados.
 function camposRecibidos(valor: unknown, ruta: string): string[][] {
   if (valor !== null && typeof valor === 'object') {
-    const entradas = Object.entries(valor);
+    const entradas = Object.entries(valor).filter(([clave]) => clave !== '_aviso' && clave !== '_nota');
     if (!entradas.length) return [[ruta, Array.isArray(valor) ? 'Lista vacía' : 'Objeto vacío']];
     return entradas.flatMap(([clave, dato]) => camposRecibidos(dato, Array.isArray(valor) ? `${ruta}[${Number(clave) + 1}]` : `${ruta}.${clave}`));
   }
   let texto = String(valor);
-  if (valor === null) texto = 'Sin dato (null)';
+  if (valor === null) texto = 'Sin dato';
   else if (typeof valor === 'boolean') texto = siNo(valor);
   else if (typeof valor === 'number') texto = cantidad(valor);
   else if (valor === '') texto = 'Texto vacío';
-  return [[ruta, texto]];
+  return [[/retorno|volatilidad/.test(ruta) ? `${ruta} · supuesto` : ruta, texto]];
 }
 
 function Adicionales({ titulo, datos, conocidos }: Readonly<{ titulo: string; datos: object; conocidos: string[] }>) {
-  const camposConocidos = new Set(conocidos);
+  const camposConocidos = new Set([...conocidos, '_aviso', '_nota']);
   const filas = Object.entries(datos).filter(([clave]) => !camposConocidos.has(clave)).flatMap(([clave, valor]) => camposRecibidos(valor, clave));
   return filas.length > 0 ? <Tabla titulo={titulo} columnas={['Campo recibido', 'Valor recibido']} filas={filas} /> : null;
 }
@@ -99,7 +123,7 @@ export function CartolaReview({ cartola, catalogo }: Readonly<{ cartola: Cartola
     <Adicionales titulo="Otros datos del cliente" datos={cartola.cliente} conocidos={['referencia', 'perfil_riesgo', 'perfil_evaluado_el', 'plan_apv']} />
     <Tabla titulo="Posiciones de la cartola" columnas={['Fila', 'Producto / identificación', 'Descripción original', 'Serie', 'Cuotas', 'Valor cuota · CLP', 'Monto declarado · CLP']} filas={cartola.posiciones.map((p, indice) => [
       String(indice + 1), nombreProducto(p.producto, catalogo), p.descripcion_original ?? 'No informada',
-      p.serie ?? 'Sin serie (null)', cantidad(p.cuotas), cantidad(p.valor_cuota), montoEntrada(p.monto_clp),
+      p.serie ?? 'Sin serie', cantidad(p.cuotas), cantidad(p.valor_cuota), montoEntrada(p.monto_clp),
     ])} />
     {cartola.posiciones.map((p, indice) => <Adicionales key={indice} titulo={`Otros campos de la posición ${indice + 1}`} datos={p} conocidos={['producto', 'descripcion_original', 'serie', 'cuotas', 'valor_cuota', 'monto_clp']} />)}
   </>;

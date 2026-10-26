@@ -16,7 +16,7 @@ describe('previsualización completa de archivos', () => {
         cuotas: 0.123456789123, valor_cuota: 12.123456789, monto_clp: 100.25, referencia_externa: 'REF-123' }],
     });
     const html = renderToStaticMarkup(<InputReview datos={{ ...datos, cartola }} nombres={{ cartola: 'cartola.json', catalogo: '', acuerdos: '' }} errores={{}} />);
-    for (const texto of ['alfa-deuda-uf', 'Descripción recibida', '0,123456789123', '12,123456789', '$100,25', 'REF-123', 'Sucursal de prueba', 'origen.confirmado', 'origen.observacion', 'Sin dato (null)']) expect(html).toContain(texto);
+    for (const texto of ['alfa-deuda-uf', 'Descripción recibida', '0,123456789123', '12,123456789', '$100,25', 'REF-123', 'Sucursal de prueba', 'origen.confirmado', 'origen.observacion', 'Sin dato']) expect(html).toContain(texto);
     expect(html).toContain('<td>No</td>');
   });
 
@@ -25,7 +25,7 @@ describe('previsualización completa de archivos', () => {
     const html = renderToStaticMarkup(<CartolaReview cartola={datos.cartola} catalogo={datos.catalogo} />);
     expect(html.match(/<tr>/g)).toHaveLength(8);
     expect(html).toContain('FM Zeta Acciones Asia, serie A');
-    expect(html).toContain('Sin serie (null)');
+    expect(html).toContain('Sin serie');
   });
 
   it('expone emisores, todas las series, seguros y otros datos adicionales del catálogo', () => {
@@ -90,7 +90,7 @@ describe('tablas del análisis de nivel 1', () => {
     expect(resumen).toContain('$2.265.000');
     expect(resumen).toContain('Gamma Renta Variable Chile');
     expect(resumen).toContain('su AGF no tiene acuerdo vigente');
-    expect(resumen).toContain('Cambiar de AGF corresponde al Nivel 2');
+    expect(resumen).toContain('Cambiar de AGF requiere una propuesta de cartera.');
     expect(html).not.toContain('Con confirmaciones');
     expect(html).not.toContain('Con cambios elegibles');
     expect(html).not.toContain('id="ahorro-title"');

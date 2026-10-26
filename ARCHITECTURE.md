@@ -29,7 +29,7 @@ Las capacidades de niveles 2 y 3 se implementarán cuando se aborde su alcance.
 | Publicación | **GitHub Pages** | Alojar el resultado estático sin servidor de aplicación. |
 
 La aplicación funcionará en el navegador, sin backend, base de datos, cuentas ni llaves de API.
-Los datos ficticios de referencia se almacenarán en archivos JSON locales del repositorio.
+Los datos de referencia se almacenan en archivos JSON locales del repositorio.
 La carga del nivel 1 será **JSON**. CSV y Papa Parse quedan pospuestos; alcanzar nivel 3 no
 requiere incorporar ese formato.
 
@@ -119,7 +119,7 @@ repositorios genéricos, contenedores de inyección ni interfaces sin variación
 
 **Responsabilidad:** obtener, interpretar y normalizar los datos externos.
 
-- Lee archivos JSON seleccionados y carga los conjuntos ficticios de referencia.
+- Lee archivos JSON seleccionados y permite cargar conjuntos de referencia para validación.
 - Distingue errores de lectura, sintaxis y estructura, conservando ruta o campo afectado.
 - Usa Zod para comprobar tipos, campos obligatorios, valores finitos y formatos admitidos.
 - Aplica los valores predeterminados documentados para campos opcionales de series.
@@ -203,7 +203,7 @@ coordinarán fuera del dominio puro. Las correcciones generarán nuevas versione
   sus variaciones, sin React, archivos ni simulaciones de bibliotecas visuales.
 - Verificar importación, errores y normalización por separado, además del recorrido completo
   de carga y presentación. Mantener las revisiones de escritorio, móvil y teclado.
-- Reproducir las cifras de aceptación de la especificación; no codificar respuestas del ejemplo.
+- Comprobar las reglas de la especificación con los datos y resultados de las guías de validación; no codificar respuestas del ejemplo.
 - Comprobar tipos, pruebas y compilación antes de publicar. Documentar sus comandos en `README.md`
   y actualizar `AGENTS.md` al introducir herramientas y la estructura de aplicación.
 - Configurar la ruta `base` de Vite para el repositorio de GitHub Pages y comprobar el resultado
@@ -213,7 +213,13 @@ La extracción a aplicación se hará deliberadamente, manteniendo la distinció
 local de referencia y la solución pública con nombre y marca propios. Los datos ficticios pueden
 incluirse en la entrega; el enunciado y su marca no deben publicarse como parte de la solución.
 
-## 7. Referencias técnicas
+## 7. Corrección de nivel 2
+
+Los casos de uso de nivel 2 `proponerCostos` y `proponerMeta` validan entradas sin React/Zod. El dominio comparte `proposalValidation`, `proposalSearch`, `risk` y `projection`. La búsqueda conserva retención/lotes en costo y verifica tickets consolidados/soportes efectivos en meta; el contador tiene corte real de 50.000 nodos. Las trayectorias mensuales conservan evidencia de saldos y liquidaciones; no hay certificado de óptimo continuo.
+
+`proposalWorker.ts` crea un Worker local de módulo (`proposal.worker.ts`), transmite contratos serializables y termina cada operación al completar o cancelar. `useAppWorkflow` invalida revisiones anteriores, separa carga de cálculo y muestra errores en la vista activa. Las vistas formatean resultados del dominio. Los JSON continúan siendo manuales, sin persistencia ni envío a red.
+
+## 8. Referencias técnicas
 
 - [Despliegue estático y GitHub Pages con Vite](https://vite.dev/guide/static-deploy.html).
 - [TypeScript y comprobación de tipos en Vite](https://vite.dev/guide/features.html#typescript).

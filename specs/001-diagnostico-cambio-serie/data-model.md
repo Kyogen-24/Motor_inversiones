@@ -1,52 +1,74 @@
-# Modelo de datos: ajuste temporal de R04
+# Modelo de datos — Nivel 1
 
-## Entradas existentes
+Las reglas están en [spec.md](spec.md). Los tipos implementados se mantienen en src/domain/model.ts y el contrato de cálculo en [analysis.md](contracts/analysis.md). Este modelo describe los nombres y relaciones reales del proyecto.
 
-| Entidad | Campos relevantes | Relación y validación |
-| --- | --- | --- |
-| Cartola | `corte`, `posiciones`, `cliente.plan_apv` | Corte válido AAAA-MM-DD; referencia temporal explícita. |
-| Posición | `producto`, `serie`, `monto_clp` | Ticket individual; no sumar tickets entre líneas. |
-| Producto/Serie | `emisor`, `codigo`, `minimo_clp`, `abierta`, `solo_apv`, `requiere_mandato`, `tac_pct` | Resolver producto y AGF exactos; mínimos no negativos, banderas normalizadas. |
-| Acuerdo | `emisor`, `estado`, `vigente_desde/hasta`, `series`, `mandato`, `patrimonio_agregado_clp`, `patrimonio_al` | Una AGF; habilitación por producto/serie. Fecha e importe obligatorios y válidos. |
+## Tipos y unidades
 
-No cambia el esquema JSON. Fecha posterior bien formada es un dato válido de entrada;
-fecha ausente o imposible sigue siendo error FR-003. Vigencia de acuerdo R01 y
-disponibilidad temporal del patrimonio R04 son comprobaciones distintas.
+Las entradas usan números JSON. Los importes, porcentajes y puntos base calculados se entregan como cadenas decimales; las cantidades que no corresponden o no pueden calcularse se expresan con null. No se implementaron tipos nominales MontoCLP o DecimalTexto ni congelación profunda de todos los contratos.
 
-## Salida de acceso
+El motor usa una instancia privada de decimal.js con 40 dígitos. Los límites de importación y la pérdida potencial previa de JSON.parse están en [input-json.md](contracts/input-json.md).
 
-`Acceso` conserva serie, indicador actual, estado, regla, motivo y evidencia. La única
-extensión es `evidencia.corte: string`, copiado de `Cartola.corte`. Permanecen
-`ticket`, `minimo`, `agregado`, `patrimonioAl`, datos de acuerdo, APV y mandato.
-Los importes del resultado continúan serializados como cadenas decimales.
+## Entradas
 
-No se mutan entradas, fechas ni montos para representar un descarte. No se añade una
-bandera global de AGF ni un estado de acceso nuevo. La salida del análisis identifica
-la semántica corregida mediante `versionReglas: 'nivel-1.1'`.
+| Tipo | Campos principales |
+| --- | --- |
+| Cartola | cliente, corte, moneda y posiciones |
+| Cliente | referencia, perfil_riesgo, perfil_evaluado_el y plan_apv; todos obligatorios |
+| Posicion | producto y serie nulos o texto; descripcion_original opcional; monto_clp obligatorio; cuotas y valor_cuota nulos o número |
+| Catalogo | version, corte_costos, fuente_costos, emisores y productos |
+| Producto | id, emisor, nombre, tipo, categoria, liquidez_dias, series y tac_pct opcional |
+| Serie | codigo, tac_pct, minimo_clp, abierta, solo_apv y requiere_mandato |
+| Acuerdo | emisor, estado, vigente_desde, vigente_hasta, mandato, patrimonio_agregado_clp, patrimonio_al y series |
+| Acuerdos | distribuidor, acuerdos y productos_sin_serie |
 
-## Derivación por alternativa
+El índice de una posición se incorpora al resultado; no se exige como campo del JSON. Cada serie pertenece al producto que la contiene. El costo de un ETF se declara como tac_pct, no costo_anual_pct.
 
-| Primera condición aplicable | Estado / regla | Tratamiento del agregado |
-| --- | --- | --- |
-| Sin acuerdo vigente o sin habilitación | out_of_scope / 0 | No determina acceso. |
-| Cerrada | blocked / 1 | No determina acceso. |
-| Solo APV sin plan | blocked / 2 | No determina acceso. |
-| Mandato requerido ausente | conditional / 3 | No sustituye estado; mínimos pendientes en tareas. |
-| Ticket suficiente | eligible / 6 | No es necesario contrastar fecha del agregado. |
-| Ticket insuficiente, fecha anterior/igual y agregado suficiente | conditional / 4 | Patrimonio aceptado para agregación, con confirmación escrita pendiente. |
-| Ticket insuficiente y agregado posterior | blocked / 5 | Conservar dato; motivo temporal, aunque alcance el monto. |
-| Ticket insuficiente y agregado de fecha aceptada pero insuficiente | blocked / 5 | Motivo de monto insuficiente. |
+Un acuerdo por emisor es la condición de unicidad actual, incluso para registros históricos. La vigencia se decide después con el corte; no se consolidan varios registros para una AGF.
 
-Con patrimonio posterior e insuficiente a la vez, indicar motivo temporal y, si se
-menciona el monto, describirlo fielmente; nunca afirmar que la única causa es monetaria.
+## Clasificación y conciliación
 
-No hay transición persistida: cada análisis deriva estados de sus entradas.
-Al formalizar un mandato, reevaluar desde regla 0; si aún depende de patrimonio futuro,
-la serie pasa de regla 3 a regla 5. No convertirla automáticamente a elegible.
+| Código del resultado | Significado |
+| --- | --- |
+| computable | Producto y costo reconocidos; incluye efectivo y depósitos a cero |
+| unidentified | Producto o serie actual sin identificar; conserva monto y motivo |
+| excluded | Producto reconocido que no integra la base de TAC |
 
-## Oportunidades y tareas
+Los códigos son los anteriores, no no_identificada/excluida; sus etiquetas de pantalla están en español. Las exclusiones se diferencian por tipo y motivo, sin un desglose estructurado adicional por cada familia.
 
-R05 conserva el mejor elegible y compara condicionales respecto de ese escenario.
-Una alternativa bloqueada no produce oportunidad. Regla 3 puede conservar oportunidad
-con tareas explícitas de mínimos pendientes, acreditación al corte y reevaluación.
-El diagnóstico actual, peso, costo y TAC no cambian por la fecha del agregado.
+Monto total = computable + sinIdentificar + excluido. Identificado suma las posiciones reconocidas, incluidas las exclusiones. No equivale necesariamente a computable.
+
+Si el total es cero, porcentajeSinIdentificar es nulo. Si la base computable es cero, TAC y pesos son nulos y el costo computable es cero.
+
+## Evaluaciones de acceso
+
+Acceso contiene la serie, la marca actual, estado, regla, motivo y evidencia. Estado puede ser eligible, conditional, blocked u out_of_scope. Actual es una marca de tenencia independiente del permiso de contratación.
+
+La evidencia contiene ticket, mínimo, patrimonio agregado y su fecha, corte, mandato, plan APV, habilitación, vigencia e inicio/fin del acuerdo.
+
+El patrimonio posterior no acredita mínimos al corte: cuando se necesita agregación y no se aplicó una regla previa, produce blocked por regla 5. No es un error que invalide el archivo de acuerdos. El ticket es siempre individual para nivel 1.
+
+## Resultado por posición
+
+ResultadoPosicion incluye:
+
+- Identidad: indice, entrada, nombre, emisor y tipo.
+- Diagnóstico: clasificacion, motivo, monto, peso, tac y costo.
+- Comparación: alternativas, elegida, tacPosterior, costoPosterior, ahorro, bps y empates.
+- Condicional: serie, TAC, adicional y tareas, o nulo.
+- Advertencias: código y mensaje; en valorización, declarado, calculado y diferencia.
+
+La elegida puede ser la actual sin mejora. Empates contiene las alternativas de menor TAC elegible que reducen costo; el código de serie resuelve la elección de forma estable.
+
+## Resultado agregado
+
+Analisis usa versionReglas nivel-1.1 y conserva contexto de cartola, catálogo y acuerdos con structuredClone, posiciones, totales y acuerdosVigentes.
+
+Totales incluye monto, identificado, computable, sinIdentificar, porcentajeSinIdentificar, excluido, costo, tac, ahorro, costoPosterior, tacPosterior, condicional, porcentajes de ahorro/posterior y conteos.
+
+No existe una unión de salida ok/error. Un error de validación semántica lanza Error; la infraestructura y la presentación lo convierten en un aviso del archivo cuando identifican su ruta.
+
+## Mutación, carga y límites
+
+El caso de uso no modifica las entradas y las pruebas lo comprueban con objetos congelados. Eso no significa que la importación produzca objetos congelados ni que exista una instantánea documental de nivel 3.
+
+La carga mantiene revisiones y descarta respuestas obsoletas. Cambiar un archivo retira el resultado anterior como vigente; limpiar o recargar vacía el estado. No hay historial, persistencia, confirmaciones guardadas ni documento firmado.

@@ -4,7 +4,7 @@ import { decimal } from './numeric';
 export const vigente = (acuerdo: Acuerdo, corte: string) => acuerdo.estado === 'active'
   && acuerdo.vigente_desde < corte && (acuerdo.vigente_hasta === null || acuerdo.vigente_hasta >= corte);
 
-export function evaluarAcceso(serie: Serie, producto: Producto, ticket: number, actual: string | null,
+export function evaluarAcceso(serie: Serie, producto: Producto, ticket: number | string, actual: string | null,
   cartola: Cartola, acuerdo?: Acuerdo): Acceso {
   const activo = !!acuerdo && vigente(acuerdo, cartola.corte);
   const habilitada = activo && Object.hasOwn(acuerdo!.series[producto.id] ?? {}, serie.codigo);

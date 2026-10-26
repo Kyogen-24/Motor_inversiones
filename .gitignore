@@ -16,4 +16,12 @@ data/*
 !data/cartola.json
 !data/catalogo.json
 !data/acuerdos.json
+!data/supuestos.json
+!data/meta.json
 !data/pruebas/
+!data/pruebas/**
+
+# Metadatos y notas de herramientas de agentes; no son parte de la entrega.
+.agents/
+docs/superpowers/
+docs/correccion-nivel-2.md

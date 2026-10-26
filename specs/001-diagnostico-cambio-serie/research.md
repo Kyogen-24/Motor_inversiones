@@ -1,55 +1,75 @@
-# Investigación: patrimonio agregado al corte
+# Decisiones técnicas contrastadas — Nivel 1
 
-Fecha: 2026-10-24. Alcance: decisiones necesarias para FR-012/013 y SC-010 sobre
-la aplicación existente. Investigación local de código y revisión independiente acotada;
-no se requiere seleccionar tecnologías nuevas ni consultar información financiera externa.
+Revisión documental del 2026-10-24. Fuentes: código, configuración y pruebas del repositorio actual, junto con la especificación. Esta revisión no es una nueva investigación de versiones externas ni una reproducción de la instalación del proyecto del que se copiaron los documentos.
 
-## 1. Ubicación de la validación temporal
+## 1. Mantener las cuatro capas
 
-- **Decisión**: Comprobar fecha en `evaluarAcceso`, solo tras reglas 0–3 y con ticket
-  inferior al mínimo. Fechas AAAA-MM-DD ya validadas admiten comparación inclusiva directa.
-- **Razón**: `eligibility.ts` ya resuelve R04. `validation.ts` valida fechas existentes,
-  pero no compara patrimonio/corte; añadir allí una restricción global rompería el caso B/F.
-- **Alternativas descartadas**: Rechazar todo el archivo/acuerdo; insertar una regla previa;
-  usar el reloj del equipo; retrotraer la fecha; imponer antigüedad máxima no solicitada.
+La implementación separa dominio, aplicación, infraestructura y presentación. El diagnóstico se prueba invocando analizarCartola sin React ni lectores de archivos. No hay necesidad documental de añadir repositorios genéricos, clases por regla ni nuevas capas.
 
-## 2. Evidencia y contratos
+El flujo actual usa model.ts, numeric.ts, validation.ts, diagnosis.ts y eligibility.ts. Los nombres propuestos en la copia no se presentan como módulos existentes.
 
-- **Decisión**: Añadir solo `corte: string` a `Acceso.evidencia`; conservar agregado,
-  patrimonioAl, ticket y mínimo. `regla` y `motivo` existentes explican uso o descarte.
-- **Razón**: El corte ya está disponible en `Cartola`. El resultado llega a UI y tareas;
-  no hacen falta parámetros nuevos ni estados duplicados de validación temporal.
-- **Alternativas descartadas**: Convertir patrimonio futuro a cero, borrarlo, agregar
-  banderas/enumeraciones redundantes o cambiar JSON de entrada para adjuntar acreditaciones.
+Hay una limitación de separación: AnalysisView deriva subtotales y TAC de subconjuntos para sus tablas. Se registra para revisión posterior; esta actualización no mueve cálculos.
 
-## 3. Mandato y tareas
+## 2. Describir el stack instalado
 
-- **Decisión**: Conservar regla 3 si falta mandato. Con ticket insuficiente, las tareas
-  deben pedir patrimonio suficiente al corte o alcanzar el mínimo con el ticket, además
-  de formalizar mandato, obtener confirmación escrita y reevaluar.
-- **Razón**: `tareasCondicionales` hoy solo revisa monto. Preparar tareas no autoriza
-  saltar la primera coincidencia ni acreditar el patrimonio futuro.
-- **Alternativas descartadas**: Bloquear anticipadamente la regla 3 o afirmar que formalizar
-  el mandato basta para cumplir el mínimo. La decisión final corresponde a una nueva evaluación.
+Package.json y el lockfile son la referencia: TypeScript 7, React 19, Vite 8, Tailwind 4, Zod 4, decimal.js 10, Vitest 5, Lucide e Inter local mediante Fontsource.
 
-## 4. Ahorros y regresión
+No se instalaron lossless-json, Testing Library ni jsdom en este proyecto. No se requiere una .nvmrc o un entorno DOM inexistente para describir las pruebas actuales. La comprobación de tipos es explícita y build la ejecuta antes de Vite.
 
-- **Decisión**: Conservar filtros y fórmulas de `diagnosis.ts` y totales de aplicación.
-  Verificar que F bloqueada desaparezca de oportunidades sin eliminar otras condicionales.
-- **Razón**: R05 ya filtra elegibles y condicionales por estado. Con patrimonio Alfa futuro,
-  M de Deuda UF sigue regla 3 y produce 270.000 adicionales frente a B; no exigir total cero.
-- **Alternativas descartadas**: Anular todas las oportunidades de una AGF o alterar la TAC diagnosticada.
+Las suites se mantienen junto a los módulos de src. No hay pruebas en tests/domain ni tests/presentation aunque esas rutas aparecieran en la documentación copiada.
 
-## 5. Presentación y versión
+## 3. Reconocer los límites de lectura numérica
 
-- **Decisión**: Añadir el corte al detalle existente, mantener motivo desde el motor y
-  actualizar la descripción R04. Identificar el resultado corregido como `nivel-1.1`.
-- **Razón**: `PositionDetail.tsx` ya muestra monto/fecha; una fila más hace auditable
-  el descarte. La marca diferencia resultados bajo la regla anterior sin crear historial.
-- **Alternativas descartadas**: Recalcular acceso en React, nuevas pantallas o un sistema de migraciones.
+El lector usa JSON.parse sobre el texto recibido y Zod valida los números interpretados. El cálculo posterior usa decimal.js.
 
-## Resultado
+Esto no preserva cada lexema financiero del JSON. Una conversión a Decimal después de Number no recupera dígitos perdidos. Tampoco rechaza específicamente claves repetidas. Se documentan esas limitaciones en lugar de atribuir garantías de un parser que no está instalado.
 
-Sin decisiones abiertas. Se conservan stack, archivos de entrada y arquitectura.
-La revisión independiente confirma la evidencia mínima y la matriz de fechas/prioridades.
-El diseño no acredita implementación, pruebas nuevas ni cierre de SC-005/SC-009.
+Una alternativa futura sería un lector que conserve el origen numérico; no es una dependencia ni una tarea completada de esta revisión. Adoptarla requeriría implementación y pruebas específicas, fuera de la autorización documental.
+
+## 4. Política decimal real
+
+El constructor privado usa 40 dígitos significativos y ROUND_HALF_UP. El motor evita redondeo de pantalla antes de comparar mínimos, costos o empates. Las pruebas comprueban redondeo y límites con las entradas admitidas.
+
+El límite aplicado por validarNumero es de 16 dígitos significativos, magnitud máxima 10^15 y mínimo positivo 10^-8, con cero admitido. No equivale a una escala general máxima de ocho decimales ni a una precisión de trabajo de 64 dígitos.
+
+La TAC agregada se obtiene a partir del costo total y la base computable. Los pesos redondeados de pantalla no se usan para reconstruir ese costo.
+
+## 5. Separar errores y estados de acceso
+
+Zod atiende estructura. ValidarNegocio comprueba referencias, unicidad, fechas y magnitudes antes de calcular.
+
+La unicidad de acuerdos es por emisor en el archivo completo; no hay selección entre varios históricos y uno vigente. La fecha posterior del patrimonio se admite si está bien formada y se usa como impedimento de acceso por regla 5 solo cuando es necesaria la agregación.
+
+La propuesta copiada de rechazar globalmente el análisis por esa fecha contradice eligibility.ts y las pruebas temporales actuales. Se corrigió la documentación para mantener la política del proyecto, sin cambiar el motor.
+
+## 6. No confundir inmutabilidad de cálculo con congelación de importación
+
+El caso de uso no modifica las entradas; sus pruebas también reciben objetos congelados. El contexto del resultado usa structuredClone.
+
+La importación no congela profundamente todos los objetos y model.ts no define unidades nominales readonly para cada magnitud. Esas garantías de la copia no se atribuyen a este contrato.
+
+## 7. Usar evidencia verificable
+
+La revisión ejecutó las tres suites existentes de nivel 1: motor, importación y HTML de presentación. Son 121 pruebas, no 26 o 27 archivos de prueba. Typecheck también pasó.
+
+RenderToStaticMarkup permite comprobar el HTML de tablas y componentes; no verifica interacción, foco real, pintura, contraste ni zoom. Un componente de evidencia probado por separado tampoco demuestra que el flujo principal permita llegar a él.
+
+Las cifras y casos están en [quickstart.md](quickstart.md); el registro de ejecución está en [checklists/validation.md](checklists/validation.md).
+
+## 8. Distinguir interfaz, objetivos visuales y estado actual
+
+La aplicación inicia vacía y permite cargar/reemplazar archivos y navegar entre archivos y análisis. Sus pestañas de análisis son Vista general, Posiciones y Series. El sitio completo contiene otras modalidades, sin que formen parte de esta revisión.
+
+Los tokens de DESIGN.md y styles.css ya pertenecen a este proyecto. No se importan como mediciones verificadas los contrastes, tamaños y capturas del otro entorno.
+
+Persisten diferencias entre el resultado y su exposición: Series utiliza Actual en lugar del estado de la tenencia, y el enlace de evidencia lleva a una tabla general. Se documentan en [contracts/ui.md](contracts/ui.md) para no presentar esa consulta como totalmente resuelta.
+
+## 9. Registrar la entrega real
+
+Vite usa VITE_BASE_PATH; el workflow Pages es manual, depende de pruebas/build y publica dist. No tiene trigger de PR ni revisiones de acciones fijadas a SHA.
+
+La publicación, subruta real, recursos del artefacto y revisión del historial necesitan evidencia propia. No se conservan como hechos actuales los mensajes de fallo npm, ausencia de Git, instalación alternativa Node o puntuaciones React Doctor de la copia.
+
+## Conclusión documental
+
+Los requisitos financieros del nivel 1, los contratos y las rutas se alinean con el motor existente. Las limitaciones de lectura, las diferencias de presentación y las verificaciones no realizadas quedan explícitas. Esta actualización no acredita cambios de código ni cierra tareas pendientes de implementación, rendimiento, accesibilidad o entrega.

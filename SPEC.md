@@ -1,47 +1,77 @@
-# Especificación de entrega — Motor_inversiones
+# Alcance y decisiones del nivel 1 — Motor_inversiones
 
-## Alcance
+## Alcance de este documento
 
-Nivel 1: R01, R02, R04 y R05. Carga JSON de cartola, catálogo y acuerdos; diagnóstico de costos, acceso por primera coincidencia, comparación de series del mismo fondo y AGF, evidencia y tareas condicionales. Comisiones independientes de selección y desempates.
+Este documento resume exclusivamente diagnóstico de costos, acceso y comparación de series del nivel 1. Su especificación está en [spec.md](specs/001-diagnostico-cambio-serie/spec.md). La aplicación contiene modalidades adicionales; su existencia no amplía R05 ni autoriza a atribuirles ahorro por cambio de serie.
 
-La especificación detallada de trabajo es `specs/001-diagnostico-cambio-serie/spec.md` (FR-001 a FR-024). `ARCHITECTURE.md` define las cuatro capas. `DESIGN.md` y `docs/frontend-direction.md` guían la interfaz.
+Las reglas y decisiones vigentes de propuestas de costo y meta pertenecen a [la especificación de nivel 2](specs/002-propuestas-costo-meta/spec.md). Sus contratos, modelo de datos, plan, investigación, tareas y guía de validación están en `specs/002-propuestas-costo-meta/`; el registro de correcciones está en [docs/correccion-nivel-2.md](docs/correccion-nivel-2.md). Esta separación evita atribuir capacidades de nivel 2 al diagnóstico de nivel 1.
 
-## Entradas y salidas
+## Entradas y diagnóstico
 
-La aplicación inicia vacía y solicita selección manual de los tres archivos. Los archivos de entrada de `data/` definen el contrato JSON. Los importes se expresan en CLP y las TAC en porcentaje anual. Los campos omitidos de serie usan abierta=true, solo_apv=false y requiere_mandato=false. No se inventan TAC ni mínimos ausentes.
+La aplicación inicia vacía. Se seleccionan cartola, catálogo y acuerdos; el diagnóstico no necesita supuestos ni meta. Los archivos son JSON y se procesan localmente, sin cuentas, servidor de aplicación ni API financiera.
 
-El resultado incluye contexto copiado, clasificación por posición, costos, pesos, alternativas con reglas y evidencia, selección elegible, empates, ahorro en CLP/bps y oportunidad condicional adicional. Los montos decimales se serializan como cadenas.
+Monto_clp es obligatorio y se conserva como base. Cuotas por valor cuota comprueba la valorización; una diferencia absoluta mayor de 1 CLP produce advertencia sin cambiar el monto.
 
-## Criterios de aceptación
+Efectivo y depósitos son computables con costo cero. Seguros, other y productos reconocidos sin costo verificable quedan excluidos. Producto o serie actual desconocidos permanecen sin identificar. Un ETF usa tac_pct del producto si está declarada.
 
-- Ejemplo: 230.000.000 CLP computables y 5.000.000 sin identificar.
-- Costo anual 5.180.000; TAC 2,2522 %.
-- Ahorro elegible 1.650.000; costo posterior 3.530.000; TAC posterior 1,5348 %.
-- Ahorro condicional adicional 615.000, separado del escenario elegible.
-- Con condiciones cumplidas y acceso reevaluado: ahorro total posible 2.265.000; costo 2.915.000; TAC 1,2674 %. La tabla adicional compara desde la serie elegible o la actual si se conserva.
-- Gamma conserva diagnóstico y ahorro cero al no existir acuerdo vigente.
-- Modificar comisiones no modifica decisiones. Modificar acceso o TAC recalcula resultados.
-- Una carga inválida no presenta cifras anteriores como vigentes.
-- Uso por teclado, foco visible, tablas con encabezados y regiones desplazables en móvil.
+El total concilia como computable más sin identificar más excluido. Identificado suma lo reconocido, incluidas exclusiones; no es sinónimo de base computable. TAC y pesos usan solo esa base.
 
-## Cierre de presentación — 2026-10-24
+## Acceso y ahorro
 
-Alcance aceptado por el usuario: gráfico de costo actual, elegible y con condiciones cumplidas; tablas separadas de ahorro elegible y condicional adicional; resumen textual y bases de TAC explícitas sin columnas nuevas. En el caso de referencia, las bases son 230.000.000 CLP en el gráfico, 210.000.000 en la tabla elegible y 105.000.000 en la condicional. Las TAC de los subconjuntos no se presentan como TAC de toda la cartera.
+La vigencia exige estado activo, inicio anterior al corte y fin nulo o igual/posterior al corte. Hay un solo registro por emisor en acuerdos; los duplicados se rechazan incluso si uno es histórico.
 
-Diagnóstico de costos conserva todas las posiciones. Estado de cada serie solo incluye posiciones con series evaluables; ser computable no implica tener series. Los productos sin series no aparecen en comparación de series, y los no identificados permanecen pendientes en diagnóstico. Gamma conserva costo y ahorro cero por falta de acuerdo; cambiar de AGF pertenece al Nivel 2.
+R04 se detiene en la primera coincidencia. Solo después de acuerdo/habilitación, cierre, APV y mandato, y con ticket insuficiente, se considera el patrimonio agregado. Si su fecha es posterior al corte, esa alternativa se bloquea por regla 5 con motivo temporal. El diagnóstico y las otras series continúan.
 
-El cierre no acredita una revisión visual nueva ni la navegación contextual de evidencia. El estado y las comprobaciones se registran en `docs/acceptance-audit.md`.
+El ticket es individual. La tenencia actual no autoriza nuevas compras. Solo se cambia a una serie elegible, estrictamente más barata, del mismo fondo y AGF. Las mejoras empatadas se ordenan por código y se conservan como evidencia; un empate con la actual no produce cambio.
 
-## Decisiones
+El adicional condicional parte de la mejor opción elegible aplicada o de la actual. Solo se suma la mejor reducción adicional positiva por posición y se muestra separada. Formalizar mandato o confirmar agregación exige actualizar datos y reevaluar.
 
-La política numérica, límites de entrada y recuperación de errores se documentan en README.md. La vigencia usa corte, no reloj del equipo. Se conserva el monto declarado y se advierte una discrepancia superior a 1 CLP. No se consolidan tickets. Si no hay reducción estricta se mantiene actual; los empates más baratos se resuelven por código de serie.
+Las comisiones se conservan en el contexto. Su valor no elige series, desempata ni se suma a TAC. La previsualización de Acuerdos muestra las comisiones recibidas; las tablas del análisis no las presentan como costo del cliente.
 
-Actualización implementada el 2026-10-24: R04 contrasta la fecha del patrimonio agregado únicamente cuando el ticket no alcanza el mínimo y ninguna regla 0 a 3 ha determinado estado. La agregación requiere monto suficiente y fecha anterior o igual al corte; un dato posterior no acredita el mínimo. Si no hay agregado válido suficiente, corresponde regla 5 con motivo de monto o fecha, sin invalidar el acuerdo ni bloquear las otras series de la AGF. Se conserva regla 3 cuando falta mandato y se exige reevaluar después de cumplir sus tareas. La evidencia incluye el corte y los resultados usan `nivel-1.1`. Los escenarios y criterios están en FR-012, FR-013 y SC-010 de la especificación detallada.
+## Precisión y contratos efectivos
 
-## Exclusiones y evolución
+La lectura usa JSON.parse y Zod; lossless-json no forma parte del proyecto. No hay preservación de lexemas arbitrarios ni rechazo específico de claves JSON repetidas. Los límites de los números interpretados se aplican antes o durante la validación de negocio según el campo.
 
-Niveles 2 y 3 son posteriores. No se anuncia documento inmutable, controles completos, firma, historia ni retorno. La pureza del motor, entradas explícitas, contexto y evidencia preparan esa evolución. Seguros se reconocen y excluyen de la TAC; no se implementa su desglose documental completo.
+La configuración privada de decimal.js tiene 40 dígitos significativos y ROUND_HALF_UP. La salida financiera usa cadenas decimales. CLP se presenta al peso, TAC agregada a cuatro decimales y pesos a dos. No se decide elegibilidad con cifras redondeadas.
 
-## Entrega
+Límites de importación: 5 × 1024 × 1024 bytes por archivo, 10.000 posiciones, 1.000 productos/emisores/acuerdos y 100 series por producto. Los montos, cuotas y mínimos comprobados por dominio admiten hasta 16 dígitos significativos; cero o valores positivos desde 10^-8 hasta 10^15. TAC y comisiones llegan hasta 100 %. Fechas entre 1900 y 2200. No existe una regla general de ocho decimales.
 
-Aplicación estática sin marca gráfica. El flujo de Pages publica solo `dist`. La publicación en un repositorio público propio y su sitio de GitHub Pages siguen pendientes. El despliegue desde `main` es manual mediante GitHub Actions. El enunciado y los anexos internos no forman parte de la distribución pública.
+Los tipos de entrada contienen números, no unidades nominales ni texto decimal sin parsear. AnalizarCartola devuelve Analisis nivel-1.1 o lanza Error. No devuelve una unión ok/error. No muta entradas; clona su contexto sin prometer congelación profunda de toda la estructura.
+
+## Arquitectura y archivos
+
+Se mantienen dominio, aplicación, infraestructura y presentación. La función pura de aplicación coordina el diagnóstico; la interfaz gestiona archivos y estados. Los módulos y las pruebas están en src, no en un árbol tests separado.
+
+| Requisitos | Regla | Archivos principales | Pruebas existentes |
+| --- | --- | --- | --- |
+| FR-001–003 | Entrada y contexto | infrastructure/input.ts; presentation/useAppWorkflow.ts | infrastructure/input.test.ts; presentation/tables.test.tsx |
+| FR-004–005 | R01 | domain/eligibility.ts; domain/validation.ts | application/analizarCartola.test.ts |
+| FR-006–009 | R02 | domain/diagnosis.ts; application/analizarCartola.ts | application/analizarCartola.test.ts; presentation/tables.test.tsx |
+| FR-010–013 | R04 | domain/eligibility.ts; domain/model.ts | application/analizarCartola.test.ts |
+| FR-014–017 | R05 | domain/diagnosis.ts; presentation/AnalysisView.tsx | application/analizarCartola.test.ts; presentation/tables.test.tsx |
+| FR-018–020 | Independencia, determinismo y precisión | domain/numeric.ts; domain/diagnosis.ts; presentation/format.ts | application/analizarCartola.test.ts |
+| FR-021–023 | Consulta y nuevas cargas | presentation/DataPanel.tsx; InputReview.tsx; AnalysisView.tsx; useAppWorkflow.ts | presentation/tables.test.tsx; verificaciones de recorrido pendientes |
+| FR-024 | Trazabilidad | Esta matriz y documentos de nivel 1 | checklists/validation.md |
+
+Las rutas de la tabla son relativas a src. Los contratos completos están en [entrada](specs/001-diagnostico-cambio-serie/contracts/input-json.md), [análisis](specs/001-diagnostico-cambio-serie/contracts/analysis.md) e [interfaz](specs/001-diagnostico-cambio-serie/contracts/ui.md).
+
+## Presentación y límites observados
+
+El análisis tiene Vista general, Posiciones y Series. La revisión de archivos permite consultar contenido y campos adicionales, con búsqueda y paginación donde corresponda. Cambiar un archivo invalida resultados; las lecturas obsoletas se descartan.
+
+La inspección detectó diferencias que la documentación copiada daba por resueltas:
+
+- La tabla principal de Series muestra «Actual» en lugar del estado/regla de esa serie. El motor sí conserva ambos datos.
+- El resultado conserva evidencia completa y tareas, pero el recorrido principal no expone todos esos campos. El componente PositionDetail existe, aunque el enlace «Ver evidencia» del análisis lleva a la tabla general, sin seleccionar una posición.
+- AnalysisView calcula algunos subtotales y TAC de subconjuntos a partir del resultado. No se acredita separación absoluta de todos los cálculos derivados de presentación.
+- No se han acreditado para este checkout los benchmarks, contrastes, zoom ni pruebas DOM del otro proyecto.
+
+Estos puntos permanecen documentados para una revisión de implementación posterior. La autorización actual es solo documental.
+
+## Verificación y entrega
+
+La revisión documental de nivel 1 ejecutó 121 pruebas en tres archivos y la comprobación de tipos, ambas sin fallos. El [registro de validación](specs/001-diagnostico-cambio-serie/checklists/validation.md) detalla esa evidencia y sus pendientes. La verificación posterior de nivel 2 se registra por separado para no mezclar alcances ni resultados.
+
+El workflow existente se inicia manualmente, ejecuta pruebas y build y publica solo dist. No hay ejecución automática por pull request en ese archivo ni acciones fijadas a SHA; usa referencias de versión. No se ejecutó publicación ni se confirmó una URL pública en esta revisión.
+
+Nivel 1 no genera proyecciones, propuestas entre fondos, controles de nivel 3, PDF ni huella. Sus pruebas no acreditan esos otros alcances.

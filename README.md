@@ -1,6 +1,6 @@
 # Motor_inversiones
 
-Diagnóstico de costos y comparación de series de inversión con evidencia. **Nivel 1**: R01, R02, R04 y R05. Interfaz en español y datos ficticios. El cálculo ocurre en el navegador, sin cuentas, backend, base de datos ni API.
+Diagnóstico de costos y propuestas de inversión con evidencia. **Niveles 1 y 2**: R01–R07. Interfaz en español y archivos locales de referencia para validación. El cálculo ocurre en el navegador, sin cuentas, backend, base de datos ni API.
 
 ## Ejecutar
 
@@ -29,6 +29,13 @@ npm run preview
 3. En Posiciones, busca un fondo. La flecha de cada fila abre Acceso y series, con alternativas, reglas y evidencia.
 4. Usa Actualizar archivos para reemplazar uno o varios JSON. Los demás se conservan; seleccionar un reemplazo retira los resultados anteriores. Los errores aparecen junto al archivo afectado y se enlazan desde el resumen.
 5. Limpiar datos elimina archivos y resultados. Recargar la página también vuelve al inicio vacío. No se guarda una base de datos.
+6. Para costo, carga además `data/supuestos.json`, analiza y pulsa **Generar mejora de costo**. Para meta, agrega `data/meta.json` y pulsa **Armar propuesta para la meta**. La generación usa un Worker local; puedes navegar durante el cálculo. Cambiar un archivo o limpiar cancela el cálculo anterior.
+
+En nivel 2 se mantienen o reducen volatilidad y costo sin usar retornos ni comisiones para seleccionar. Se respetan categoría, elegibilidad, perfil y concentración. Se conserva una tenencia barata aunque no admita compras nuevas. La búsqueda determinista explora hasta 50.000 nodos: informa la mejor propuesta encontrada, sin certificar un óptimo global ni la inexistencia de otras soluciones. Las exclusiones y tareas condicionales permanecen visibles.
+
+En meta, el VP usa el promedio simple de categorías efectivas, días reales / 365,25 y reservas cronológicas. Los pesos usan el capital asignado; el no asignable se informa aparte y no financia escenarios. El ticket de nueva inversión suma fondo/serie entre tramos; en costo los lotes originales se evalúan separados. Los pagos simultáneos conservan su identidad sin duplicar liquidez futura.
+
+Los tres escenarios son **supuestos**: adverso −1,5 pp, base 0 y favorable +1,5 pp al retorno bruto. Se capitaliza a retorno neto de TAC hasta liquidación; el costo mensual por saldo medio es informativo y no se cobra dos veces. Solo se declara «alcanza» si todos los pagos se cubren en base neta. El pendiente futuro no es el capital adicional necesario hoy. Consulta [la aceptación de nivel 2](specs/002-propuestas-costo-meta/quickstart.md).
 
 Comprueba primero las cifras de referencia. Después usa los conjuntos de [data/pruebas](data/pruebas/README.md) o modifica los JSON y vuelve a cargarlos. Los cuatro escenarios de APV, mandato, acuerdos vencidos y ausencia de ahorro, y los cuatro archivos inválidos, se comprobaron en la interfaz local el 2026-10-24.
 
@@ -44,7 +51,7 @@ src/
   application/     analizarCartola: caso de uso puro
   infrastructure/  lectura JSON y Zod
   presentation/    React, formato y estilos
-data/              archivos JSON de entrada ficticios
+data/              archivos JSON de referencia y variantes de validación
 ```
 
 `data/` contiene archivos de entrada; no es una base de datos. La aplicación no requiere servidor de aplicación ni base de datos: el alojamiento estático o Vite solo entrega archivos.
@@ -65,7 +72,7 @@ Referencias oficiales: [Vite](https://vite.dev/guide/), [integración Tailwind](
 
 ## Reglas y precisión
 
-La fecha de corte determina la vigencia del acuerdo: inicio estrictamente anterior y fin inclusivo. La elegibilidad se detiene en la primera coincidencia de R04. El ticket es individual; no se suman posiciones para alcanzar mínimos.
+La fecha de corte determina la vigencia del acuerdo: inicio estrictamente anterior y fin inclusivo. La elegibilidad se detiene en la primera coincidencia de R04. En diagnóstico y costo el ticket conserva cada lote original; en meta se consolida la nueva inversión por fondo/serie entre tramos, sin sumar tenencias existentes para fabricar mínimos.
 
 Cuando el ticket no alcanza el mínimo, R04 acepta patrimonio agregado sólo si su fecha es anterior o igual al corte de la cartola. Un patrimonio posterior permanece visible como evidencia, pero aplica regla 5 con motivo temporal; no invalida la carga ni afecta otras series de la misma AGF. Si falta mandato, prevalece regla 3 y las tareas exigen acreditar el mínimo al corte o alcanzarlo con el ticket antes de reevaluar. Los resultados actuales usan `nivel-1.1`.
 
@@ -87,9 +94,9 @@ Estas cifras son criterios de aceptación; no están codificadas en el motor.
 
 ## Pruebas
 
-`npm test` ejecuta las pruebas de Vitest del caso de uso puro y la importación. `npm run test:watch` mantiene las pruebas en observación. Cubren las cifras de aceptación, 13 alternativas, primera coincidencia, límites de vigencia/mínimos, APV, mandato, cambios de datos, independencia de comisiones, empates, ceros, exclusiones, valorización, precisión, inmutabilidad, determinismo y errores de entrada.
+`npm test` ejecuta las pruebas de Vitest del motor, casos de uso, importación, Worker y presentación. `npm run test:watch` mantiene las pruebas en observación. Cubren cifras de aceptación, acceso, concentración, mínimos, perfil, VP, escenarios, pagos, precisión, determinismo, cancelación y errores de entrada.
 
-Las pruebas utilizan los JSON ficticios y sus variaciones; no montan React ni necesitan un servidor. Las revisiones visuales e interactivas se documentan en `docs/construccion.md`. Pages ejecuta las pruebas y la compilación antes de subir el sitio.
+Las pruebas de motor e importación usan los JSON de referencia y sus variaciones. Las de presentación renderizan React de forma estática y no necesitan un servidor. Las revisiones visuales e interactivas se documentan en `docs/construccion.md`. Pages ejecuta las pruebas y la compilación antes de subir el sitio.
 
 `src/presentation/tables.test.tsx` verifica además el HTML generado por las tablas: contenido completo y precisión de la previsualización, datos adicionales de seguros, diagnóstico, totales, exclusiones y ahorro condicional. No requiere un navegador para ejecutarse.
 
@@ -109,4 +116,4 @@ El repositorio privado conserva los originales HTML/MD y anexos internos como re
 
 ## Límites funcionales
 
-No incluye proyecciones, metas, reasignación entre fondos, optimización de riesgo, nueve controles completos, documento formal, SHA-256, historia ni CSV. El perfil es contexto declarado y no se valida su vigencia. El ahorro compara costos del catálogo ficticio; no promete rentabilidad ni representa todo el mercado. La persona revisa y decide.
+No incluye controles del nivel 3, documento formal, SHA-256, historia ni CSV. El perfil limita crecimiento, pero no se valida su caducidad ni se infiere idoneidad real. El ahorro compara costos del catálogo cargado; las proyecciones son supuestos y no prometen rentabilidad ni representan todo el mercado. La persona revisa y decide.

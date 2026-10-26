@@ -37,14 +37,15 @@ export default function AnalysisView({ resultado }: Props) {
             {!filtradas.length && <p className="ts-empty-search">No hay posiciones que coincidan con «{busqueda}».</p>}
           </section>}
           {pestana === 'acceso' && <section className="ts-series-overview"><h2 id="series-title" tabIndex={-1}>Estado de cada serie por posición</h2><p className="ts-muted">El ticket es el monto de cada posición. La serie actual se identifica por separado.</p><TablaSeries posiciones={resultado.posiciones} /></section>}
-    <footer className="ts-analysis-footer"><p>Catálogo {contexto.catalogo.version} · Fuente: {contexto.catalogo.fuente_costos} · Costos al {fecha(contexto.catalogo.corte_costos)}</p><p>Lectura: todo el catálogo. Propuesta: series habilitadas con acuerdo vigente, dentro del mismo fondo y AGF.</p><blockquote className="ts-universe-declaration">Esta propuesta considera productos de las administradoras con las que {contexto.acuerdos.distribuidor} mantiene acuerdos de distribución vigentes. Puede haber en el mercado alternativas de menor costo fuera de ese universo.</blockquote><p>Una persona revisa y decide.</p><details><summary>Contexto del análisis</summary><p>Reglas {resultado.versionReglas} · Obtención de costos: no informada.</p><p>AGF con acuerdo vigente: {resultado.acuerdosVigentes.length ? resultado.acuerdosVigentes.join(', ') : 'ninguna'}. Depósitos y efectivo no requieren acuerdo y conservan costo cero.</p><p>Perfil declarado el {fecha(contexto.cartola.cliente.perfil_evaluado_el)}; vigencia no evaluada en nivel 1.</p></details></footer>
+    <footer className="ts-analysis-footer"><details><summary>Contexto del análisis</summary><p>Catálogo {contexto.catalogo.version} · Fuente: {contexto.catalogo.fuente_costos} · Costos al {fecha(contexto.catalogo.corte_costos)}</p><p>Lectura: todo el catálogo. Propuesta: series habilitadas con acuerdo vigente, dentro del mismo fondo y AGF.</p><blockquote className="ts-universe-declaration">Esta propuesta considera productos de las administradoras con las que {contexto.acuerdos.distribuidor} mantiene acuerdos de distribución vigentes. Puede haber en el mercado alternativas de menor costo fuera de ese universo.</blockquote><p>Una persona revisa y decide.</p><p>AGF con acuerdo vigente: {resultado.acuerdosVigentes.length ? resultado.acuerdosVigentes.join(', ') : 'ninguna'}.</p><p>Perfil declarado el {fecha(contexto.cartola.cliente.perfil_evaluado_el)}.</p></details></footer>
   </>;
 }
 
 function Resumen({ resultado, verSeries, verPosiciones }: PropsResumen) {
   const total = resultado.totales;
   const condicionales = resultado.posiciones.filter(p => p.condicional);
-  const sinAcuerdo = resultado.posiciones.filter(p => p.alternativas.length > 0 && p.ahorro === '0' && p.emisor && !resultado.acuerdosVigentes.includes(p.emisor));
+  const emisoresConAcuerdo = new Set(resultado.acuerdosVigentes);
+  const sinAcuerdo = resultado.posiciones.filter(p => p.alternativas.length > 0 && p.ahorro === '0' && p.emisor && !emisoresConAcuerdo.has(p.emisor));
   const advertencias = resultado.posiciones.filter(p => p.clasificacion !== 'computable' || p.advertencias.length);
   const hayCondicional = total.condicional !== '0';
   const costoCondicional = decimal(total.costoPosterior).minus(total.condicional).toString();
@@ -67,7 +68,7 @@ function Resumen({ resultado, verSeries, verPosiciones }: PropsResumen) {
             <section className="ts-result-summary" aria-label="Resumen del ahorro">
               <p>En total, el ahorro elegible es de <strong>{clp(total.ahorro)} al año</strong>{total.tac !== null && total.tacPosterior !== null && <>, y la TAC ponderada {decimal(total.ahorro).gt(0) ? 'baja' : 'se mantiene'} de <strong>{pct(total.tac, 4)}</strong> a <strong>{pct(total.tacPosterior, 4)}</strong></>}.</p>
               {hayCondicional && <p>El ahorro condicional adicional es de <strong>{clp(total.condicional)}</strong>{condicionales.length > 1 && <> ({condicionales.map(p => clp(p.condicional!.adicional)).join(' + ')})</>}, sujeto a las condiciones de la tabla. Si se cumplen y se reevalúa el acceso, el ahorro total podría subir a <strong>{clp(ahorroConCondiciones)} al año</strong>.</p>}
-              {sinAcuerdo.map(p => <p key={p.indice}>La posición en <strong>{p.nombre}</strong> no tiene ahorro por serie: su AGF no tiene acuerdo vigente. Cambiar de AGF corresponde al Nivel 2.</p>)}
+              {sinAcuerdo.map(p => <p key={p.indice}>La posición en <strong>{p.nombre}</strong> no tiene ahorro por serie: su AGF no tiene acuerdo vigente. Cambiar de AGF requiere una propuesta de cartera.</p>)}
             </section>
             {advertencias.length > 0 && <section className="ts-review-notice"><Info size={18} aria-hidden="true" /><div><h2>Antes de decidir, revisa estos datos</h2>{advertencias.map(p => <p key={p.indice}><strong>{p.nombre}:</strong> {p.clasificacion !== 'computable' ? `${clp(p.monto)} · ${p.motivo}` : p.advertencias.map(a => a.mensaje).join(' ')} <button onClick={() => verSeries(p.indice)}>Ver evidencia</button></p>)}</div></section>}
           
